@@ -20,7 +20,7 @@ Notes:
 The following html script creates a map with points colored according to associated values. In this case the points correspond to plant population localities
 and their colors to the associated altitude. The map spans Eurasia (extentBounds). The points are in csv format, and the columns names are 'x' for longitude and 'y' for latitude. 
 
-```javascript
+```html
 <!DOCTYPE html>
 
 <head>
@@ -66,12 +66,11 @@ svg {
 
 </style>
 
-<body>
-	
-</body>
+<body></body>
 
 <script type="text/javascript">
-
+```
+```javascript
 const mapPars = {
 	//base parameters
 	projection: d3.geoMollweide(),
@@ -127,6 +126,7 @@ const mapPars = {
 }
 
 plotMap(mapPars)
-
+```
+```html
 </script>
 ```
