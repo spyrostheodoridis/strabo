@@ -127,4 +127,6 @@ const mapPars = {
 }
 
 plotMap(mapPars)
+
+</script>
 ```
