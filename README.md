@@ -16,12 +16,8 @@ Notes:
 1. Use the standard EPSG:4326 projection to make sure that the files are in WGS84 datum
 2. The topojson file can be directly downloaded from this repository
 
-## Case 1: Plot points
-The following html script creates a map with points colored according to associated values. In this case the points correspond to plant population localities
-and their colors to the associated altitude. The map spans Eurasia (extentBounds) and it's in the web mercator projection. The points are in csv format, 
-and the columns names are 'x' for longitude and 'y' for latitude. 
-
-```javascript
+The configurable html code below applies to all cases.
+```html
 <!DOCTYPE html>
 
 <head>
@@ -68,8 +64,15 @@ svg {
 </style>
 
 <body></body>
+```
 
-<script type="text/javascript">
+
+## Case 1: Plot points
+The following html script creates a map with points colored according to associated values. In this case the points correspond to plant population localities
+and their colors to the associated altitude. The map spans Eurasia (extentBounds) and it's in the web mercator projection. The points are in csv format, 
+and the columns names are 'x' for longitude and 'y' for latitude. 
+
+```javascript
 
 const mapPars = {
 	//base parameters
@@ -126,8 +129,6 @@ const mapPars = {
 }
 
 plotMap(mapPars)
-
-</script>
 ```
 
 ## Case 2: Plot raster
@@ -143,57 +144,6 @@ chorospy.rasterToJSON('bio1.tif', 'bio1.json', 54009)
 ```
 
 ```javascript
-<!DOCTYPE html>
-
-<head>
-	<script src="https://d3js.org/d3.v4.min.js"></script>
-	<script src="https://d3js.org/d3-geo-projection.v1.min.js"></script>
-	<script src="https://d3js.org/topojson.v2.min.js"></script>
-	<script src="http://api.tiles.mapbox.com/mapbox.js/plugins/turf/v2.0.0/turf.min.js"></script>
-	<script src="bioDivMaps.js"></script>
-	<title>General Maps</title>
-</head>
-
-<style>
-
-svg {
-  font-family: helvetica;
-  font-size: 12px;
-}
-
-.graticule {
-	fill: none;
-	stroke: black;
-	stroke-width: 1;
-}
-
-.mapBoarders {
-	fill: none;
-	stroke: black;
-	stroke-width: 1;
-}
-
-.baseMap {
-	fill: Gainsboro;
-}
-
-.points {
-	fill: purple;
-	stroke: none;
-}
-
-.scaleBar {
-  stroke-width: 3;
-  stroke: black;
-
-</style>
-
-<body>
-	
-</body>
-
-<script type="text/javascript">
-
 const mapPars = {
 	//base parameters
 	projection: d3.geoMollweide(),
@@ -249,9 +199,6 @@ const mapPars = {
 }
 
 plotMap(mapPars)
-
-
-</script>
 ```
 
 ## Case 3: Plot vector
@@ -265,57 +212,6 @@ ogr2ogr -f GeoJSON -t_srs EPSG:4326 bio1.geojson bio1.shp
 ```
 
 ```javascript
-<!DOCTYPE html>
-
-<head>
-	<script src="https://d3js.org/d3.v4.min.js"></script>
-	<script src="https://d3js.org/d3-geo-projection.v1.min.js"></script>
-	<script src="https://d3js.org/topojson.v2.min.js"></script>
-	<script src="http://api.tiles.mapbox.com/mapbox.js/plugins/turf/v2.0.0/turf.min.js"></script>
-	<script src="bioDivMaps.js"></script>
-	<title>General Maps</title>
-</head>
-
-<style>
-
-svg {
-  font-family: helvetica;
-  font-size: 12px;
-}
-
-.graticule {
-	fill: none;
-	stroke: black;
-	stroke-width: 1;
-}
-
-.mapBoarders {
-	fill: none;
-	stroke: black;
-	stroke-width: 1;
-}
-
-.baseMap {
-	fill: Gainsboro;
-}
-
-.points {
-	fill: purple;
-	stroke: none;
-}
-
-.scaleBar {
-  stroke-width: 3;
-  stroke: black;
-
-</style>
-
-<body>
-	
-</body>
-
-<script type="text/javascript">
-
 const mapPars = {
 	//base parameters
 	projection: d3.geoMollweide(),
@@ -371,8 +267,5 @@ const mapPars = {
 }
 
 plotMap(mapPars)
-
-</script>
-
 ```
 
