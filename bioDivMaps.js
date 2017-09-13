@@ -305,7 +305,7 @@ function plotColBar(container, x, y, width, height, sections, dataExt, colScale,
 		.style('stroke-width', 0).style('shape-rendering', 'crispEdges');
 
 	if (text === true) {
-		container.selectAll('.colText').data(dataExt).enter().append('text').text(function (d) {return d} ) 
+		container.selectAll('.colText').data(dataExt).enter().append('text').text(function (d) {return d.toFixed(2)} ) 
 			.attr('x', function (d,i) {return x + i*width} ).attr('y', y + height + 10).attr('dx', '-0.1em');
 	}
 };
