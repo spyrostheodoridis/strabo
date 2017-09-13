@@ -67,7 +67,7 @@ svg {
 ```
 
 
-## Case 1: Plot points
+## Plot points
 The following html script creates a map with points colored according to associated values. In this case the points correspond to plant population localities
 and their colors to the associated altitude. The map spans Eurasia (extentBounds) and it's in the web mercator projection. The points are in csv format, 
 and the columns names are 'x' for longitude and 'y' for latitude. 
@@ -131,7 +131,7 @@ const mapPars = {
 plotMap(mapPars)
 ```
 
-## Case 2: Plot raster
+## Plot raster
 The following html script creates a map that shows the annual mean temperature (http://www.worldclim.org/) in Europe. The raster was obtained at
 at 10 minutes (~340 km<sup>2</sup>) resolution. We first need to transform the raster to json format that can used from Javascript. For that, 
 I use a function from the chorospy package (https://github.com/spyrostheodoridis/chorospy). The map is in Mollweide projection.
@@ -201,7 +201,7 @@ const mapPars = {
 plotMap(mapPars)
 ```
 
-## Case 3: Plot vector
+## Plot vector
 The same climatic data set above can be plotted as a vector file as well. The following script creates a map at a narrower extent (compared to Case 2), but climate is now in vector format.
 
 ```bash
