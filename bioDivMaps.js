@@ -94,8 +94,10 @@ function plotMap(o){
 						if (d.coordinates[0][0] === d.coordinates[1][0]) {return d.coordinates[0][0]; }
 						else if ((d.coordinates[0][1] === d.coordinates[1][1])) {return d.coordinates[0][1]; }
 					})
-					.attr('dx', function(d) { if (d.coordinates[0][1] === d.coordinates[1][1]) {return '-1.3em'; }})
-					.attr('dy', function(d) { if (d.coordinates[0][0] === d.coordinates[1][0]) {return '1em'; }})
+					.attr('dx', function(d) { if (d.coordinates[0][1] === d.coordinates[1][1]) {return '-1.3em';}
+											else { return '-0.5em';}})
+					.attr('dy', function(d) { if (d.coordinates[0][0] === d.coordinates[1][0]) {return '1em';}
+											else { return '0em';}})
 					.attr('transform' , function(d) {
 						lineCoord = projection(d.coordinates[0])
 						if (lineCoord[1] > o.MainWidth) {return 'translate(' + lineCoord[0] + ',' + projection([0, -85])[1] +')' }
