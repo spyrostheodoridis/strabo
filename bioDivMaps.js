@@ -162,7 +162,7 @@ function plotMap(o){
 			var canvas = d3.select('body').append('canvas').style('display', 'none');
 			var ctx = canvas.node().getContext("2d");
 
-			const scale = 10; // the higher the number the crisper the cells
+			const scale = o.rScale; // the higher the number the crisper the cells
 			// the following part takes care of the blurriness in retina displays
 			const ratio = window.devicePixelRatio || 1;
 		    canvas.attr('width', rasW * ratio * scale) // the physical pixels of the canvas / rendering pixels
