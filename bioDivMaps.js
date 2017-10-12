@@ -6,13 +6,9 @@ function plotMap(o){
 		
 	//>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 	//>>>>>>>>>>>>>>>>>>>>>> define projection and outline >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
-	var projection = o.projection;
+	var projection = o.projection.projection;
 	projection.scale(1).translate([0,0]);
-	// if a projected img is imported for canvas, do not rotate the map, leave it to default prime meridian, unless the img has been centered using the same meridian as the base map
-	//if (plotCanvas == false) {
-	//	projection.rotate([-(extentBounds[1][0] + extentBounds[0][0]) / 2, 0.000001, 0.00001]); // the small number is a hack
-	//};
-
+	
 	var path = d3.geoPath().projection(projection);
 	var graticule = d3.geoGraticule();
 	graticule.extent([o.extentBounds[0], o.extentBounds[1]]).step([10, 10]);
@@ -20,9 +16,14 @@ function plotMap(o){
 	var clPath0 = main.append("clipPath").append('path').datum(graticule.outline).attr('d', path);
 	var initBox = clPath0.node().getBBox();
 	// redefine scale and translate
-	const s = .95 / Math.max( initBox.width / o.MainWidth, initBox.height / o.MainHeight);
+	const s = .9 / Math.max( initBox.width / o.MainWidth, initBox.height / o.MainHeight);
 	const t = [ (o.MainWidth - s*(2*initBox.x + initBox.width )) / 2, (o.MainHeight - s*(2*initBox.y + initBox.height )) / 2];
 	projection.scale(s).translate(t);
+	// if a projected img is imported for canvas, do not rotate the map, leave it to default prime meridian,
+	//unless the img has been centered using the same meridian as the base map
+	if (o.projection.name == 'Orthographic') {
+		projection.rotate([o.projection.rotate[0], o.projection.rotate[1], o.projection.rotate[2]]).clipAngle(90);
+	};
 
 	// make new clip path from graticule.outline 
 	var clPath = main.append("clipPath").attr('id', 'outClip').append('path').datum(graticule.outline).attr('d', path);
@@ -31,7 +32,7 @@ function plotMap(o){
 	var ppList = []
 	for (let i = 0; i < pathP.numberOfItems - 1; ++i) {
 		ppList.push([pathP.getItem(i).x, pathP.getItem(i).y])
-	}
+	};
 
 	//>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 	//>>>>>>>>>>>>>>>>>>>>>> define order of layers >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
@@ -58,7 +59,7 @@ function plotMap(o){
 	    scaleBar.append('line').attr('x1', sclBarCoord1[0]).attr('y1', sclBarCoord1[1]).attr('x2', sclBarCoord2[0]).attr('y2', sclBarCoord2[1])
 	     	.attr('class', 'scaleBar');
 
-	    var scaleText = scaleBar.append('text').text(o.dx + 'km').attr('y', sclBarCoord2[1]+15)
+	    var scaleText = scaleBar.append('text').text(o.dx + 'km').attr('y', sclBarCoord2[1]).attr('dy', '1.2em');
 	    var bboxScaleT = scaleText.node().getBBox();
 	    scaleText.attr('x', sclBarCoord1[0] + (sclBarCoord2[0] - sclBarCoord1[0])/2 - bboxScaleT.width/2);
 	};
@@ -263,7 +264,7 @@ function plotMap(o){
 				plotColBar(colorBars, o.pBarX, o.pBarY, 100, 20, 100, pointsExtent, o.colPoint);
 			};
 
-			pointLayer.selectAll('points').data(data).enter().append('circle').attr('clip-path', 'url(#outClip)').attr('r', 5).attr('class', 'points')
+			pointLayer.selectAll('points').data(data).enter().append('circle').attr('clip-path', 'url(#outClip)').attr('r', o.pointR).attr('class', 'points')
 				.each(function(d) {
 					d.x = +d.x
 					d.y = +d.y
@@ -307,7 +308,7 @@ function plotColBar(container, x, y, width, height, sections, dataExt, colScale,
 		.style('stroke-width', 0).style('shape-rendering', 'crispEdges');
 
 	if (text === true) {
-		container.selectAll('.colText').data(dataExt).enter().append('text').text(function (d) {return d.toFixed(2)} ) 
-			.attr('x', function (d,i) {return x + i*width} ).attr('y', y + height + 10).attr('dx', '-0.1em');
+		container.selectAll('.colText').data(dataExt).enter().append('text').text(function (d) {return d.toFixed(1)} ) 
+			.attr('x', function (d,i) {return x + i*width} ).attr('y', y + height).attr('dx', '-0.75em').attr('dy', '1.2em');
 	}
 };
