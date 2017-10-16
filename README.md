@@ -10,6 +10,7 @@ This map can be obtained as a shp file from http://www.naturalearthdata.com/down
 ```bash
 ogr2ogr -f GeoJSON -t_srs EPSG:4326 world_10m.json ne_10m_admin_0_countries/ne_10m_admin_0_countries.shp -select admin,continent
 geo2topo world_10m.json > world_10m.topojson -q 1000000
+# you may need to open world_10m.json with a text editor and change "translate":[--179.999999,-90] to "translate":[-180,-90]
 ```
 
 Notes:
