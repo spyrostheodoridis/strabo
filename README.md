@@ -80,7 +80,7 @@ and the columns names are 'x' for longitude and 'y' for latitude and 'Altitude' 
 
 const mapPars = {
 	//base parameters
-	projection: {projection: 'geoOrthographic', rotate: [-40, -60, 0]}, //d3.geoMercator(), d3.geoEquirectangular()
+	projection: {projection: 'geoOrthographic', rotate: [-40, -60, 0]},
 	extentBounds: [[-180,-90], [179.999, 90]],
 	MainWidth: 1100,
 	MainHeight: 600,
@@ -162,7 +162,7 @@ chorospy.rasterToJSON('bio1.tif', 'bio1.json', 3857)
 
 const mapPars = {
 	//base parameters
-	projection: {projection: 'geoMercator', rotate: [0, 0, 0]}, //d3.geoMercator(), d3.geoEquirectangular()
+	projection: {projection: 'geoMercator', rotate: [0, 0, 0]},
 	extentBounds: [[-10,35], [30, 45]],
 	MainWidth: 1100,
 	MainHeight: 600,
@@ -232,7 +232,7 @@ The map is in Transverse Mercator projection rotate by 21 degrees (the central m
 ```bash
 # First transform the raster to shp and then to geojson
 gdalwarp -te 22.7 39.8 24.5 41 CHELSA_bio10_1.tif bio1.tif -overwrite
-gdal_polygonize.py bio1.tif -f "ESRI Shapefile" bio1.shp -overwrite
+gdal_polygonize.py bio1.tif -f "ESRI Shapefile" bio1.shp
 ogr2ogr -f GeoJSON -t_srs EPSG:4326 bio1.geojson bio1.shp
 ```
 
