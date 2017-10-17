@@ -223,6 +223,7 @@ const mapPars = {
 plotMap(mapPars)
 </script>
 ```
+![alt text](https://raw.githubusercontent.com/spyrostheodoridis/biodivMaps/master/examples/exmpl2.png)
 
 ## Plot vector
 The same climatic data set above can be plotted as a vector file as well. The following script creates a map at a narrower extent (a part of Northern Greece), but climate is now in vector format.
@@ -300,4 +301,5 @@ plotMap(mapPars)
 
 </script>
 ```
+![alt text](https://raw.githubusercontent.com/spyrostheodoridis/biodivMaps/master/examples/exmpl3.png)
 
