@@ -10,12 +10,12 @@ This map can be obtained as a shp file from http://www.naturalearthdata.com/down
 ```bash
 ogr2ogr -f GeoJSON -t_srs EPSG:4326 world_10m.json ne_10m_admin_0_countries/ne_10m_admin_0_countries.shp -select admin,continent
 geo2topo world_10m.json > world_10m.topojson -q 1000000
-# you may need to open world_10m.json with a text editor and change "translate":[--179.999999,-90] to "translate":[-180,-90]
 ```
 
 Notes:
-1. Use the standard EPSG:4326 projection to make sure that the files are in WGS84 datum
-2. The topojson file can be directly downloaded from this repository
+1. For topo / geojson files use the standard EPSG:4326 projection to make sure that all coordinates are in WGS84 datum. D3 will take care of the reprojection
+2. The world topojson file can be directly downloaded from this repository
+3. You may need to open world_10m.json with a text editor and change "translate":[--179.999999,-90] to "translate":[-180,-90]
 
 The configurable html code below applies to all cases.
 ```html
@@ -34,18 +34,18 @@ The configurable html code below applies to all cases.
 
 svg {
   font-family: helvetica;
-  font-size: 12px;
+  font-size: 18px;
 }
 
 .graticule {
 	fill: none;
-	stroke: black;
+	stroke: grey;
 	stroke-width: 1;
 }
 
 .mapBoarders {
 	fill: none;
-	stroke: black;
+	stroke: #E8E8E8;
 	stroke-width: 1;
 }
 
@@ -54,8 +54,9 @@ svg {
 }
 
 .points {
-	fill: purple;
-	stroke: none;
+	fill: grey;
+	stroke: black;
+	fill-opacity: 1;
 }
 
 .scaleBar {
@@ -70,203 +71,232 @@ svg {
 
 ## Plot points
 The following html script creates a map with points colored according to associated values. In this case the points correspond to plant population localities
-and their colors to the associated altitude. The map spans Eurasia (extentBounds) and it's in the web mercator projection. The points are in csv format, 
-and the columns names are 'x' for longitude and 'y' for latitude. 
+and their colors to the associated altitude. The map is in the web mercator projection with some rotation applied. The points are in csv format, 
+and the columns names are 'x' for longitude and 'y' for latitude and 'Altitude' for altitude. The position of the colorbar can be adjusted.
 
 ```javascript
 
+<script type="text/javascript">
+
 const mapPars = {
 	//base parameters
-	projection: d3.geoMercator(), //web mercator 
-	extentBounds: [[-10, 30], [180, 80]], // map extent
+	projection: {projection: 'geoOrthographic', rotate: [-40, -60, 0]}, //d3.geoMercator(), d3.geoEquirectangular()
+	extentBounds: [[-180,-90], [179.999, 90]],
 	MainWidth: 1100,
 	MainHeight: 600,
 	BaseMap: 'world_10m.topojson',
-	plotGraticule: true,
+	plotGraticule: false,
 	plotOutline: true,
 	plotCountryBoarders: false,
-	plotCoast: true,
+	plotCoast: false,
 	plotBase: true,
-	plotGratText: true,
+	plotGratText: false,
 
 	//color maps
-	//colMapImg: d3.scaleLinear().interpolate(d3.interpolateRgb).range(['blue', 'red']),
+	//colMapImg: d3.scaleLinear().interpolate(d3.interpolateHslLong).range(['red', 'blue']),
 	//colMapVct: d3.scaleLinear().interpolate(d3.interpolateRgb).range(['blue', 'red']),
-	colPoint: d3.scaleLinear().interpolate(d3.interpolateRgb).range(['#009900', '#dfbf9f']),
+	colPoint: d3.scaleLinear().interpolate(d3.interpolateHsl).range(['#009900', '#dfbf9f']),
 
 	//>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 	//>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>layer data parameters>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 	// png image
-	plotBaseImage: false, // image should be projected in the same coordinate system as below
-	//baseImageLayer: 'backExtent.png',
-	//baseImgBounds: [[-11.54573382380191, 33.5], [121.00000000000001, 72.0]],
+	plotBaseImage: false, // image should be projected in the same coordinate system as above
+	//baseImageLayer: 'world_marbleMerc.png',
+	//baseImgBounds: [[17.09986032275, 58.70819384965], [179.9953477348346, 83.63410065304986]],
 	// canvas data parameters
 	plotCanvas: false,
-	//canvasSrc: 'outIMG.json',
-	//rBarX: 300, // position in pixels
-	//rBarY: 300, // position in pixels
+	//canvasSrc: '', //the json source file
+	//rBarX: 800, // position in pixels
+	//rBarY: 550, // position in pixels
+	//rScale: 150, // the higher the better (unless you get an error then trim it)
+	//imgDataScale: 10,
 	// vector json layer parameters
 	plotVectorLayer: false,
 	//vctFormat: 'gJson',
-	//vectLayerScr: 'outCells.json',
-	//vBarX: 300, // position in pixels
+	//vectLayerScr: '', // the geo/topo json source file
+	//vBarX: 500, // position in pixels
 	//vBarY: 400, // position in pixels
+	//vctDataScale: 10, // rescale data
 	// point parameters
 	plotPoints: true,
-	pointFile: 'samples.csv',
+	pointFile: 'samples.csv', // csv point file
+	pointR: 5,
 	colorPoints: true,
-	colorVar: 'Altitude', // The variable for the color scheme
-	pBarX: 300, // position in pixels
+	colorVar: 'Altitude',
+	pBarX: 500, // position in pixels
 	pBarY: 500, // position in pixels
 	// scale bar parameters
-	plotScale: true,
+	plotScale: false,
 	get Lat0 () {
     return this.extentBounds[0][1] + (this.extentBounds[1][1] - this.extentBounds[0][1])/2;
  	},
-	Lon0: 10,
-	scaleBarOff: [50 , -10], // offset of the scale bar
-	dx: 800, // in km
+ 	get Lon0 () {
+    return this.extentBounds[0][0] + (this.extentBounds[1][0] - this.extentBounds[0][0])/2;
+ 	},
+	scaleBarOff: [0 , 0.04], // offset of the scale bar
+	dx: 300, // in km
 	earthR: 6371 // earth radius in km
 }
 
 plotMap(mapPars)
+
+</script>
 ```
 
+
 ## Plot raster
-The following html script creates a map that shows the annual mean temperature (http://www.worldclim.org/) in Europe. The raster was obtained at
-at 10 minutes (~340 km<sup>2</sup>) resolution. We first need to transform the raster to json format that can used from Javascript. For that, 
-I use a function from the chorospy package (https://github.com/spyrostheodoridis/chorospy). The map is in Mollweide projection.
+The following html script creates a map that shows the annual mean temperature (http://chelsa-climate.org/) in southern Europe. The raster was obtained at
+at 30 arc second (~1 km<sup>2</sup>) resolution. We first need to transform the raster to json format that can used from Javascript. For that, 
+I use a function from the chorospy package (https://github.com/spyrostheodoridis/chorospy). The map is in Web Mercator projection.
 
 ```bash
 # first clip the raster to the desired extent
-gdalwarp -te -10 35 40 75 ../../Downloads/wc2.0_10m_bio/wc2.0_bio_10m_01.tif bio1.tif -overwrite 
+gdalwarp -te -10 35 30 45 CHELSA_bio10_1.tif  bio1.tif -overwrite 
 # then transform it to json
-chorospy.rasterToJSON('bio1.tif', 'bio1.json', 54009)
+chorospy.rasterToJSON('bio1.tif', 'bio1.json', 3857)
 ```
 
 ```javascript
+<script type="text/javascript">
+
 const mapPars = {
 	//base parameters
-	projection: d3.geoMollweide(),
-	extentBounds: [[-10, 35], [40, 75]], // [[-180, -80], [180, 84]] map extent
+	projection: {projection: 'geoMercator', rotate: [0, 0, 0]}, //d3.geoMercator(), d3.geoEquirectangular()
+	extentBounds: [[-10,35], [30, 45]],
 	MainWidth: 1100,
 	MainHeight: 600,
 	BaseMap: 'world_10m.topojson',
 	plotGraticule: true,
 	plotOutline: true,
 	plotCountryBoarders: false,
-	plotCoast: true,
-	plotBase: true,
-	plotGratText: true,
+	plotCoast: false,
+	plotBase: false,
+	plotGratText: false,
 
 	//color maps
-	colMapImg: d3.scaleLinear().interpolate(d3.interpolateRgb).range(['blue', 'red']),
+	colMapImg: d3.scaleLinear().interpolate(d3.interpolateHslLong).range(['blue', 'red']),
 	//colMapVct: d3.scaleLinear().interpolate(d3.interpolateRgb).range(['blue', 'red']),
-	//colPoint: d3.scaleLinear().interpolate(d3.interpolateRgb).range(['#009900', '#dfbf9f']),
+	//colPoint: d3.scaleLinear().interpolate(d3.interpolateHsl).range(['#009900', '#dfbf9f']),
 
 	//>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 	//>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>layer data parameters>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 	// png image
-	plotBaseImage: false, // image should be projected in the same coordinate system as below
-	//baseImageLayer: 'backExtent.png',
-	//baseImgBounds: [[-11.54573382380191, 33.5], [121.00000000000001, 72.0]],
+	plotBaseImage: false, // image should be projected in the same coordinate system as above
+	//baseImageLayer: 'world_marbleMerc.png',
+	//baseImgBounds: [[17.09986032275, 58.70819384965], [179.9953477348346, 83.63410065304986]],
 	// canvas data parameters
 	plotCanvas: true,
-	canvasSrc: 'bio1.json',
-	rBarX: 500, // position in pixels
-	rBarY: 300, // position in pixels
+	canvasSrc: 'bio1.json', //the json source file
+	rBarX: 800, // position in pixels
+	rBarY: 500, // position in pixels
+	rScale: 5, // the higher the better (unless you get an error then trim it)
+	imgDataScale: 10,
 	// vector json layer parameters
 	plotVectorLayer: false,
 	//vctFormat: 'gJson',
-	//vectLayerScr: 'outCells.json',
-	//vBarX: 300, // position in pixels
+	//vectLayerScr: '', // the geo/topo json source file
+	//vBarX: 500, // position in pixels
 	//vBarY: 400, // position in pixels
+	//vctDataScale: 10, // rescale data
 	// point parameters
 	plotPoints: false,
-	//pointFile: 'samples.csv',
+	//pointFile: 'samples.csv', // csv point file
+	//pointR: 5,
 	//colorPoints: true,
 	//colorVar: 'Altitude',
-	//pBarX: 300, // position in pixels
+	//pBarX: 500, // position in pixels
 	//pBarY: 500, // position in pixels
 	// scale bar parameters
-	plotScale: true,
+	plotScale: false,
 	get Lat0 () {
     return this.extentBounds[0][1] + (this.extentBounds[1][1] - this.extentBounds[0][1])/2;
  	},
-	Lon0: 10,
-	scaleBarOff: [10 , -10], // offset of the scale bar
-	dx: 800, // in km
+ 	get Lon0 () {
+    return this.extentBounds[0][0] + (this.extentBounds[1][0] - this.extentBounds[0][0])/2;
+ 	},
+	scaleBarOff: [0 , 0.04], // offset of the scale bar
+	dx: 300, // in km
 	earthR: 6371 // earth radius in km
 }
 
 plotMap(mapPars)
+</script>
 ```
 
 ## Plot vector
-The same climatic data set above can be plotted as a vector file as well. The following script creates a map at a narrower extent (compared to Case 2), but climate is now in vector format.
+The same climatic data set above can be plotted as a vector file as well. The following script creates a map at a narrower extent (a part of Northern Greece), but climate is now in vector format.
+The map is in Transverse Mercator projection rotate by 21 degrees (the central meridian of UTM zone 34).
 
 ```bash
 # First transform the raster to shp and then to geojson
-gdalwarp -te -10 35 20 50 ../../Downloads/wc2.0_10m_bio/wc2.0_bio_10m_01.tif bio1.tif -overwrite
-gdal_polygonize.py bio1.tif -f "ESRI Shapefile" bio1.shp
+gdalwarp -te 22.7 39.8 24.5 41 CHELSA_bio10_1.tif bio1.tif -overwrite
+gdal_polygonize.py bio1.tif -f "ESRI Shapefile" bio1.shp -overwrite
 ogr2ogr -f GeoJSON -t_srs EPSG:4326 bio1.geojson bio1.shp
 ```
 
 ```javascript
 const mapPars = {
 	//base parameters
-	projection: d3.geoMollweide(),
-	extentBounds: [[-10, 35], [20, 50]], // [[-180, -80], [180, 84]] map extent
+	projection: {projection: 'geoTransverseMercator', rotate: [-21, 0, 0]},
+	extentBounds: [[22.7, 39.8], [24.5, 41]],
 	MainWidth: 1100,
 	MainHeight: 600,
 	BaseMap: 'world_10m.topojson',
-	plotGraticule: true,
+	plotGraticule: false,
 	plotOutline: true,
 	plotCountryBoarders: false,
 	plotCoast: true,
-	plotBase: true,
-	plotGratText: true,
+	plotBase: false,
+	plotGratText: false,
 
 	//color maps
-	//colMapImg: d3.scaleLinear().interpolate(d3.interpolateRgb).range(['blue', 'red']),
-	colMapVct: d3.scaleLinear().interpolate(d3.interpolateRgb).range(['blue', 'red']),
-	//colPoint: d3.scaleLinear().interpolate(d3.interpolateRgb).range(['#009900', '#dfbf9f']),
+	//colMapImg: d3.scaleLinear().interpolate(d3.interpolateHslLong).range(['blue', 'red']),
+	colMapVct: d3.scaleLinear().interpolate(d3.interpolateHslLong).range(['blue', 'red']),
+	//colPoint: d3.scaleLinear().interpolate(d3.interpolateHsl).range(['#009900', '#dfbf9f']),
 
 	//>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 	//>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>layer data parameters>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 	// png image
-	plotBaseImage: false, // image should be projected in the same coordinate system as below
-	//baseImageLayer: 'backExtent.png',
-	//baseImgBounds: [[-11.54573382380191, 33.5], [121.00000000000001, 72.0]],
+	plotBaseImage: false, // image should be projected in the same coordinate system as above
+	//baseImageLayer: 'world_marbleMerc.png',
+	//baseImgBounds: [[17.09986032275, 58.70819384965], [179.9953477348346, 83.63410065304986]],
 	// canvas data parameters
 	plotCanvas: false,
-	//canvasSrc: 'bio1.json',
-	//rBarX: 500, // position in pixels
-	//rBarY: 300, // position in pixels
+	//canvasSrc: '', //the json source file
+	//rBarX: 800, // position in pixels
+	//rBarY: 500, // position in pixels
+	//rScale: 5, // the higher the better (unless you get an error then trim it)
+	//imgDataScale: 10, // rescale data
 	// vector json layer parameters
 	plotVectorLayer: true,
 	vctFormat: 'gJson',
-	vectLayerScr: 'bio1.geojson',
-	vBarX: 500, // position in pixels
-	vBarY: 400, // position in pixels
+	vectLayerScr: 'bio1.geojson', // the geo/topo json source file
+	vBarX: 660, // position in pixels
+	vBarY: 510, // position in pixels
+	vctDataScale: 10, // rescale data
 	// point parameters
 	plotPoints: false,
-	//pointFile: 'samples.csv',
+	//pointFile: 'samples.csv', // csv point file
+	//pointR: 5,
 	//colorPoints: true,
 	//colorVar: 'Altitude',
-	//pBarX: 300, // position in pixels
+	//pBarX: 500, // position in pixels
 	//pBarY: 500, // position in pixels
 	// scale bar parameters
 	plotScale: true,
 	get Lat0 () {
     return this.extentBounds[0][1] + (this.extentBounds[1][1] - this.extentBounds[0][1])/2;
  	},
-	Lon0: 10,
-	scaleBarOff: [0 , 0], // offset of the scale bar
-	dx: 800, // in km
+ 	get Lon0 () {
+    return this.extentBounds[0][0] + (this.extentBounds[1][0] - this.extentBounds[0][0])/2;
+ 	},
+	scaleBarOff: [-0.5 , 0.5], // offset of the scale bar
+	dx: 30, // in km
 	earthR: 6371 // earth radius in km
 }
 
 plotMap(mapPars)
+
+</script>
 ```
 

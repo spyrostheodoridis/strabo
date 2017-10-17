@@ -6,14 +6,17 @@ function plotMap(o){
 		
 	//>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 	//>>>>>>>>>>>>>>>>>>>>>> define projection and outline >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
-	var projection = o.projection.projection;
-	projection.scale(1).translate([0,0]);
+	var projection = eval('d3.' + o.projection.projection + '()');
+	projection.scale(1).translate([0,0])
+	if (o.projection.projection.includes('TransverseMercator')) {
+		projection.rotate([o.projection.rotate[0], o.projection.rotate[1], o.projection.rotate[2]])
+	};
 	
 	var path = d3.geoPath().projection(projection);
 	var graticule = d3.geoGraticule();
 	graticule.extent([o.extentBounds[0], o.extentBounds[1]]).step([10, 10]);
 	// initial bounding box of the defined extent for the defined projection
-	var clPath0 = main.append("clipPath").append('path').datum(graticule.outline).attr('d', path);
+	var clPath0 = main.append('clipPath').append('path').datum(graticule.outline).attr('d', path);
 	var initBox = clPath0.node().getBBox();
 	// redefine scale and translate
 	const s = .9 / Math.max( initBox.width / o.MainWidth, initBox.height / o.MainHeight);
@@ -21,12 +24,12 @@ function plotMap(o){
 	projection.scale(s).translate(t);
 	// if a projected img is imported for canvas, do not rotate the map, leave it to default prime meridian,
 	//unless the img has been centered using the same meridian as the base map
-	if (o.projection.name == 'Orthographic') {
+	if (o.projection.projection.includes('Orthographic')) {
 		projection.rotate([o.projection.rotate[0], o.projection.rotate[1], o.projection.rotate[2]]).clipAngle(90);
 	};
 
 	// make new clip path from graticule.outline 
-	var clPath = main.append("clipPath").attr('id', 'outClip').append('path').datum(graticule.outline).attr('d', path);
+	var clPath = main.append('clipPath').attr('id', 'outClip').append('path').datum(graticule.outline).attr('d', path);
 	// get vertices of path list
 	var pathP = clPath.node().pathSegList;
 	var ppList = []
@@ -74,7 +77,13 @@ function plotMap(o){
 		//plot graticule and boarder lines
 		if (o.plotGraticule === true) { grat.append('path').datum(graticule).attr('class', 'graticule').attr('d', path); }
 
-		if (o.plotOutline === true) { grat.append('path').datum(graticule.outline).attr('class', 'graticule').attr('d', path); }
+		if (o.plotOutline === true) { 
+			if (o.projection.projection.includes('Orthographic')) { // there's a small line popping kn at the north pole therefore do the following
+				main.append('defs').append('path').datum({type: 'Sphere'}).attr('id', 'sphere').attr('d', path);
+				grat.append('use').attr('class', 'graticule').attr('xlink:href', '#sphere');
+
+			} else {grat.append('path').datum(graticule.outline).attr('class', 'graticule').attr('d', path);}
+		}
 
 		if (o.plotCountryBoarders === true){ borders.append('path')
 			.datum(topojson.mesh(topology, topology.objects.world_10m, function (a,b) {return a !== b; }))
@@ -153,7 +162,7 @@ function plotMap(o){
 					var cellX = x0 + cellCol * cellWidth;
 					var cellY = y0 + cellRow * cellHeight;
 					if (inside( [cellX, cellY], ppList) ) {
-						return d
+						return d / o.imgDataScale
 					}
 				} 
 			});
@@ -161,7 +170,7 @@ function plotMap(o){
 
 			// create the source canvas
 			var canvas = d3.select('body').append('canvas').style('display', 'none');
-			var ctx = canvas.node().getContext("2d");
+			var ctx = canvas.node().getContext('2d');
 
 			const scale = o.rScale; // the higher the number the crisper the cells
 			// the following part takes care of the blurriness in retina displays
@@ -176,7 +185,7 @@ function plotMap(o){
 			//populate the image (pixels)
 			for (let j = 0, k = 0, l = 0; j < rasH; ++j) {
 				for (let i = 0; i < rasW; ++i, ++k, l += 4) {
-					const c = d3.rgb(o.colMapImg(data.data[k])); // pixel color
+					const c = d3.rgb(o.colMapImg(data.data[k] / o.imgDataScale)); // pixel color
 					imageData.data[l + 0] = c.r;
 					imageData.data[l + 1] = c.g;
 					imageData.data[l + 2] = c.b;
@@ -194,12 +203,12 @@ function plotMap(o){
 			ctx.drawImage(offCtx.canvas, 0,0);
 
 			//export image
-			var ImageD = canvas.node().toDataURL("img/png");
+			var ImageD = canvas.node().toDataURL('img/png');
 			//load image
 			canvasIMG.attr('clip-path', 'url(#outClip)'); //clip parent g element (otherwise transformation will influence the clip path)
-			var canvIm = canvasIMG.append("svg:image").datum(ImageD).attr("xlink:href", function(d) {return d})
-					.attr("height", projRasterHeight).attr("width", projRasterWidth)
-					.attr("transform", "translate(" + x0 + "," + y0 +")");
+			var canvIm = canvasIMG.append('svg:image').datum(ImageD).attr('xlink:href', function(d) {return d})
+					.attr('height', projRasterHeight).attr('width', projRasterWidth)
+					.attr('transform', 'translate(' + x0 + ',' + y0 +')');
 
 			plotColBar(colorBars, o.rBarX, o.rBarY, 100, 20, 100, datExt, o.colMapImg);
 		}		
@@ -214,7 +223,7 @@ function plotMap(o){
 		if (o.vctFormat === 'tJson') {
 			var topoData = topojson.feature(vData, vData.objects.outCells).features
 			// get extent, exclude areas outside of clip path
-			const vctExt = d3.extent(topoData, function(d) { if (turf.intersect(d, graticule.outline())) {return d.properties.DN;} });
+			const vctExt = d3.extent(topoData, function(d) { if (turf.intersect(d, graticule.outline())) {return d.properties.DN / o.vctDataScale;} });
 			o.colMapVct.domain(vctExt)
 
 			vectLayer.selectAll('path')
@@ -222,15 +231,15 @@ function plotMap(o){
 		  .enter().append('path')
 	  		.attr('d', path)
 	  		.attr('clip-path', 'url(#outClip)')
-	  		.style('fill', function(d) {return o.colMapVct(d.properties.DN);})
-	  		.style('stroke', function(d) {return o.colMapVct(d.properties.DN);});
+	  		.style('fill', function(d) {return o.colMapVct(d.properties.DN / o.vctDataScale);})
+	  		.style('stroke', function(d) {return o.colMapVct(d.properties.DN / o.vctDataScale);});
 
 	  	plotColBar(colorBars, o.vBarX, o.vBarY, 100, 20, 100, vctExt, o.colMapVct);
 
 		} else if (o.vctFormat === 'gJson') {
 			var features = vData.features;
 			// get extent, exclude areas outside of clip path
-			const vctExt = d3.extent(features, function(d) { if (turf.intersect(d, graticule.outline())) {return d.properties.DN;} });
+			const vctExt = d3.extent(features, function(d) { if (turf.intersect(d, graticule.outline())) {return d.properties.DN / o.vctDataScale;} });
 			o.colMapVct.domain(vctExt);
 
 	  		vectLayer.selectAll('path')
@@ -238,8 +247,8 @@ function plotMap(o){
 	    	  .enter().append('path')
 	      		.attr('d', path)
 	      		.attr('clip-path', 'url(#outClip)')
-	      		.style('fill', function(d) {return o.colMapVct(d.properties.DN);})
-	      		.style('stroke', function(d) {return o.colMapVct(d.properties.DN);});
+	      		.style('fill', function(d) {return o.colMapVct(d.properties.DN / o.vctDataScale);})
+	      		.style('stroke', function(d) {return o.colMapVct(d.properties.DN / o.vctDataScale);});
 
 	      	plotColBar(colorBars, o.vBarX, o.vBarY, 100, 20, 100, vctExt, o.colMapVct);
 			
