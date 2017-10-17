@@ -143,6 +143,7 @@ plotMap(mapPars)
 </script>
 ```
 
+![alt text] (https://raw.githubusercontent.com/spyrostheodoridis/biodivMaps/master/examples/exmpl1.png)
 
 ## Plot raster
 The following html script creates a map that shows the annual mean temperature (http://chelsa-climate.org/) in southern Europe. The raster was obtained at
