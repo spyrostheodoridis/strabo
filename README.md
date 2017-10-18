@@ -21,13 +21,15 @@ The configurable html code below applies to all cases.
 ```html
 <!DOCTYPE html>
 
+<!DOCTYPE html>
+
 <head>
-	<script src="https://d3js.org/d3.v4.min.js"></script>
-	<script src="https://d3js.org/d3-geo-projection.v1.min.js"></script>
-	<script src="https://d3js.org/topojson.v2.min.js"></script>
-	<script src="http://api.tiles.mapbox.com/mapbox.js/plugins/turf/v2.0.0/turf.min.js"></script>
-	<script src="bioDivMaps.js"></script>
-	<title>General Maps</title>
+    <script src="https://d3js.org/d3.v4.min.js"></script>
+    <script src="https://d3js.org/d3-geo-projection.v1.min.js"></script>
+    <script src="https://d3js.org/topojson.v2.min.js"></script>
+    <script src="http://api.tiles.mapbox.com/mapbox.js/plugins/turf/v2.0.0/turf.min.js"></script>
+    <script src="bioDivMaps.js"></script>
+    <title>bioDivMaps</title>
 </head>
 
 <style>
@@ -38,25 +40,25 @@ svg {
 }
 
 .graticule {
-	fill: none;
-	stroke: grey;
-	stroke-width: 1;
+    fill: none;
+    stroke: grey;
+    stroke-width: 1;
 }
 
 .mapBoarders {
-	fill: none;
-	stroke: #E8E8E8;
-	stroke-width: 1;
+    fill: none;
+    stroke: white;
+    stroke-width: 0.5;
 }
 
 .baseMap {
-	fill: Gainsboro;
+    fill: grey;
 }
 
 .points {
-	fill: grey;
-	stroke: black;
-	fill-opacity: 1;
+    fill: grey;
+    stroke: black;
+    fill-opacity: 1;
 }
 
 .scaleBar {
