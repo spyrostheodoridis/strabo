@@ -84,8 +84,8 @@ gdalwarp -t_srs '+proj=ortho +ellps=WGS84 +datum=WGS84 +lon_0=40 +lat_0=60 +unit
 gdal_translate shortOrtho.tif shortOrtho.png -of PNG -outsize 20% 20%
 ```
 We also need to get the png extent in lon/lat datum. This can be done using gdalinfo. The png extent is the following:
-Lower Left : -3.0027847026909136 13.418902735883536
-Upper Right : 143.59043502752442 28.66678729004727
+Lower Left : [-3.0027847026909136, 13.418902735883536]
+Upper Right : [143.59043502752442, 28.66678729004727]
 
 Now in javascript
 
@@ -171,7 +171,7 @@ gdalwarp -te -10 35 30 45 CHELSA_bio10_1.tif  bio1.tif -overwrite
 # then transform it to json
 chorospy.rasterToJSON('bio1.tif', 'bio1.json', 3857)
 ```
-
+Now in the javascript parameter object
 ```javascript
 <script type="text/javascript">
 
@@ -191,48 +191,13 @@ const mapPars = {
 
 	//color maps
 	colMapImg: d3.scaleLinear().interpolate(d3.interpolateHslLong).range(['blue', 'red']),
-	//colMapVct: d3.scaleLinear().interpolate(d3.interpolateRgb).range(['blue', 'red']),
-	//colPoint: d3.scaleLinear().interpolate(d3.interpolateHsl).range(['#009900', '#dfbf9f']),
 
-	//>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
-	//>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>layer data parameters>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
-	// png image
-	plotBaseImage: false, // image should be projected in the same coordinate system as above
-	//baseImageLayer: 'world_marbleMerc.png',
-	//baseImgBounds: [[17.09986032275, 58.70819384965], [179.9953477348346, 83.63410065304986]],
-	// canvas data parameters
 	plotCanvas: true,
 	canvasSrc: 'bio1.json', //the json source file
 	rBarX: 800, // position in pixels
 	rBarY: 500, // position in pixels
 	rScale: 5, // the higher the better (unless you get an error then trim it)
 	imgDataScale: 10,
-	// vector json layer parameters
-	plotVectorLayer: false,
-	//vctFormat: 'gJson',
-	//vectLayerScr: '', // the geo/topo json source file
-	//vBarX: 500, // position in pixels
-	//vBarY: 400, // position in pixels
-	//vctDataScale: 10, // rescale data
-	// point parameters
-	plotPoints: false,
-	//pointFile: 'samples.csv', // csv point file
-	//pointR: 5,
-	//colorPoints: true,
-	//colorVar: 'Altitude',
-	//pBarX: 500, // position in pixels
-	//pBarY: 500, // position in pixels
-	// scale bar parameters
-	plotScale: false,
-	get Lat0 () {
-    return this.extentBounds[0][1] + (this.extentBounds[1][1] - this.extentBounds[0][1])/2;
- 	},
- 	get Lon0 () {
-    return this.extentBounds[0][0] + (this.extentBounds[1][0] - this.extentBounds[0][0])/2;
- 	},
-	scaleBarOff: [0 , 0.04], // offset of the scale bar
-	dx: 300, // in km
-	earthR: 6371 // earth radius in km
 }
 
 plotMap(mapPars)
@@ -267,23 +232,11 @@ const mapPars = {
 	plotGratText: false,
 
 	//color maps
-	//colMapImg: d3.scaleLinear().interpolate(d3.interpolateHslLong).range(['blue', 'red']),
 	colMapVct: d3.scaleLinear().interpolate(d3.interpolateHslLong).range(['blue', 'red']),
-	//colPoint: d3.scaleLinear().interpolate(d3.interpolateHsl).range(['#009900', '#dfbf9f']),
 
 	//>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 	//>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>layer data parameters>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
-	// png image
-	plotBaseImage: false, // image should be projected in the same coordinate system as above
-	//baseImageLayer: 'world_marbleMerc.png',
-	//baseImgBounds: [[17.09986032275, 58.70819384965], [179.9953477348346, 83.63410065304986]],
-	// canvas data parameters
-	plotCanvas: false,
-	//canvasSrc: '', //the json source file
-	//rBarX: 800, // position in pixels
-	//rBarY: 500, // position in pixels
-	//rScale: 5, // the higher the better (unless you get an error then trim it)
-	//imgDataScale: 10, // rescale data
+	
 	// vector json layer parameters
 	plotVectorLayer: true,
 	vctFormat: 'gJson',
@@ -291,14 +244,7 @@ const mapPars = {
 	vBarX: 660, // position in pixels
 	vBarY: 510, // position in pixels
 	vctDataScale: 10, // rescale data
-	// point parameters
-	plotPoints: false,
-	//pointFile: 'samples.csv', // csv point file
-	//pointR: 5,
-	//colorPoints: true,
-	//colorVar: 'Altitude',
-	//pBarX: 500, // position in pixels
-	//pBarY: 500, // position in pixels
+	
 	// scale bar parameters
 	plotScale: true,
 	get Lat0 () {
