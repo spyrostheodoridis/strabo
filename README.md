@@ -74,9 +74,9 @@ The following html script creates a map with points colored according to associa
 and their colors to the associated altitude. We also plot a georeferenced png image that spans Eurasia. The map is in the orthographic projection with some rotation applied. The points are in csv format, 
 and the columns names are 'x' for longitude and 'y' for latitude and 'Altitude' for altitude. The position of the colorbar can be adjusted.
 
-Prepare image (it's in wgs84)
+Prepare image
 ```bash
-# first clip the raster to the desired extent. The one we use in the Blue Marble raster without the water
+# first clip the raster (it's in wgs84) to the desired extent. The one we use is the Blue Marble raster without the sea
 gdalwarp -te -10 30 120 70 worldMarbleNoWater.tif short.tif -overwrite
 # then convert it to orthographic projection. lon_0 and lat_0 correspond to the rotation we apply
 gdalwarp -t_srs '+proj=ortho +ellps=WGS84 +datum=WGS84 +lon_0=40 +lat_0=60 +units=m +no_defs' --config CENTER_LONG 40 short.tif shortOrtho.tif -overwrite
