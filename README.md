@@ -83,9 +83,9 @@ gdalwarp -t_srs '+proj=ortho +ellps=WGS84 +datum=WGS84 +lon_0=40 +lat_0=60 +unit
 # finally convert it to png
 gdal_translate shortOrtho.tif shortOrtho.png -of PNG -outsize 20% 20%
 ```
-We also need to get the png extent in lon/lat datum. This can be done using gdalinfo. The png extent is the following: 
-Lower Left : [-3.0027847026909136, 13.418902735883536] 
-Upper Right : [143.59043502752442, 28.66678729004727] 
+We also need to get the png extent in lon/lat datum. This can be done using gdalinfo. The png extent is the following:  
+Lower Left : [-3.0027847026909136, 13.418902735883536]  
+Upper Right : [143.59043502752442, 28.66678729004727]  
 
 Now in javascript
 
