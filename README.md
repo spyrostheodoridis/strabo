@@ -21,15 +21,13 @@ The configurable html code below applies to all cases.
 ```html
 <!DOCTYPE html>
 
-<!DOCTYPE html>
-
 <head>
-    <script src="https://d3js.org/d3.v4.min.js"></script>
-    <script src="https://d3js.org/d3-geo-projection.v1.min.js"></script>
-    <script src="https://d3js.org/topojson.v2.min.js"></script>
-    <script src="http://api.tiles.mapbox.com/mapbox.js/plugins/turf/v2.0.0/turf.min.js"></script>
-    <script src="bioDivMaps.js"></script>
-    <title>bioDivMaps</title>
+	<script src="https://d3js.org/d3.v4.min.js"></script>
+	<script src="https://d3js.org/d3-geo-projection.v1.min.js"></script>
+	<script src="https://d3js.org/topojson.v2.min.js"></script>
+	<script src="http://api.tiles.mapbox.com/mapbox.js/plugins/turf/v2.0.0/turf.min.js"></script>
+	<script src="bioDivMaps.js"></script>
+	<title>bioDivMaps</title>
 </head>
 
 <style>
@@ -40,25 +38,25 @@ svg {
 }
 
 .graticule {
-    fill: none;
-    stroke: grey;
-    stroke-width: 1;
+	fill: none;
+	stroke: grey;
+	stroke-width: 0.5;
 }
 
 .mapBoarders {
-    fill: none;
-    stroke: white;
-    stroke-width: 0.5;
+	fill: none;
+	stroke: white;
+	stroke-width: 0.5;
 }
 
 .baseMap {
-    fill: grey;
+	fill: LightGray;
 }
 
 .points {
-    fill: grey;
-    stroke: black;
-    fill-opacity: 1;
+	fill: grey;
+	stroke: black;
+	fill-opacity: 1;
 }
 
 .scaleBar {
@@ -73,8 +71,41 @@ svg {
 
 ## Plot points
 The following html script creates a map with points colored according to associated values. In this case the points correspond to plant population localities
-and their colors to the associated altitude. The map is in the web mercator projection with some rotation applied. The points are in csv format, 
+and their colors to the associated altitude. We also plot a georeferenced png image that spans Eurasia. The map is in the orthographic projection with some rotation applied. The points are in csv format, 
 and the columns names are 'x' for longitude and 'y' for latitude and 'Altitude' for altitude. The position of the colorbar can be adjusted.
+
+Prepare image (it's in wgs84)
+```bash
+# first clip the raster to the desired extent. The one we use in the Blue Marble raster without the water
+gdalwarp -te -10 30 120 70 worldMarbleNoWater.tif short.tif -overwrite
+# then convert it to orthographic projection. lon_0 and lat_0 correspond to the rotation we apply
+gdalwarp -t_srs '+proj=ortho +ellps=WGS84 +datum=WGS84 +lon_0=40 +lat_0=60 +units=m +no_defs' --config CENTER_LONG 40 short.tif shortOrtho.tif -overwrite
+# finally convert it to png
+gdal_translate shortOrtho.tif shortOrtho.png -of PNG -outsize 20% 20%
+```
+We also need to get the png extent in lon/lat datum. The following python script opens the file and print the file corners and center
+```python
+#get attributes of PNG to be used for ploting in d3.js
+from osgeo import ogr, osr, gdal
+from pyproj import Proj, transform
+import re
+inproj = Proj('+proj=ortho +ellps=WGS84 +datum=WGS84 +lat_0=60 +lon_0=40 +units=m +no_defs')
+outProj = Proj(init='epsg:4326')
+
+p = !gdalinfo testOrtho.png # assign output to object
+
+for i in ['Lower Left', 'Upper Right', 'Center']:
+    pp = [x for x in p if i in x]
+    PP = re.split(r'\(|\)', pp[0])[1].strip().split(',')
+    p1, p2 = transform(inproj, outProj, float(PP[0]), float(PP[1]))
+    print('\n', i, ':', p1, p2)
+```
+The script prints:
+Lower Left : -3.0027847026909136 13.418902735883536
+Upper Right : 143.59043502752442 28.66678729004727
+Center : 50.083158027219184 57.246489812305455
+
+Now in javascript
 
 ```javascript
 
@@ -82,14 +113,14 @@ and the columns names are 'x' for longitude and 'y' for latitude and 'Altitude' 
 
 const mapPars = {
 	//base parameters
-	projection: {projection: 'geoOrthographic', rotate: [-40, -60, 0]},
+	projection: {projection: 'geoOrthographic', rotate: [-40, -60, 0]}, //d3.geoMercator(), d3.geoEquirectangular()
 	extentBounds: [[-180,-90], [179.999, 90]],
 	MainWidth: 1100,
 	MainHeight: 600,
 	BaseMap: 'world_10m.topojson',
-	plotGraticule: false,
+	plotGraticule: true,
 	plotOutline: true,
-	plotCountryBoarders: false,
+	plotCountryBoarders: true,
 	plotCoast: false,
 	plotBase: true,
 	plotGratText: false,
@@ -97,14 +128,14 @@ const mapPars = {
 	//color maps
 	//colMapImg: d3.scaleLinear().interpolate(d3.interpolateHslLong).range(['red', 'blue']),
 	//colMapVct: d3.scaleLinear().interpolate(d3.interpolateRgb).range(['blue', 'red']),
-	colPoint: d3.scaleLinear().interpolate(d3.interpolateHsl).range(['#009900', '#dfbf9f']),
+	colPoint: d3.scaleLinear().interpolate(d3.interpolateHsl).range(['red', 'blue']),
 
 	//>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 	//>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>layer data parameters>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 	// png image
-	plotBaseImage: false, // image should be projected in the same coordinate system as above
-	//baseImageLayer: 'world_marbleMerc.png',
-	//baseImgBounds: [[17.09986032275, 58.70819384965], [179.9953477348346, 83.63410065304986]],
+	plotBaseImage: true, // image should be projected in the same coordinate system as above
+	baseImageLayer: 'testOrtho.png',
+	baseImgBounds: [[-3.0027847026909136, 13.418902735883536], [143.59043502752442, 28.66678729004727]],
 	// canvas data parameters
 	plotCanvas: false,
 	//canvasSrc: '', //the json source file
