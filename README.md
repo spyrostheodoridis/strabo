@@ -83,27 +83,9 @@ gdalwarp -t_srs '+proj=ortho +ellps=WGS84 +datum=WGS84 +lon_0=40 +lat_0=60 +unit
 # finally convert it to png
 gdal_translate shortOrtho.tif shortOrtho.png -of PNG -outsize 20% 20%
 ```
-We also need to get the png extent in lon/lat datum. The following python script opens the file and print the file corners and center
-```python
-#get attributes of PNG to be used for ploting in d3.js
-from osgeo import ogr, osr, gdal
-from pyproj import Proj, transform
-import re
-inproj = Proj('+proj=ortho +ellps=WGS84 +datum=WGS84 +lat_0=60 +lon_0=40 +units=m +no_defs')
-outProj = Proj(init='epsg:4326')
-
-p = !gdalinfo testOrtho.png # assign output to object
-
-for i in ['Lower Left', 'Upper Right', 'Center']:
-    pp = [x for x in p if i in x]
-    PP = re.split(r'\(|\)', pp[0])[1].strip().split(',')
-    p1, p2 = transform(inproj, outProj, float(PP[0]), float(PP[1]))
-    print('\n', i, ':', p1, p2)
-```
-The script prints:
+We also need to get the png extent in lon/lat datum. This can be done using gdalinfo. The png extent is the following:
 Lower Left : -3.0027847026909136 13.418902735883536
 Upper Right : 143.59043502752442 28.66678729004727
-Center : 50.083158027219184 57.246489812305455
 
 Now in javascript
 
