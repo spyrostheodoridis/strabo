@@ -119,15 +119,26 @@ function plotMap(o){
 	//>>>>>>>>>>>>>>>>>>>>>>> load image >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 	if (o.plotBaseImage === true) {
 
-	 	const baseImgLl = projection(o.baseImgBounds[0]);
-	 	const baseImgUr = projection(o.baseImgBounds[1]);
-	  	//width and height of image in projected pixels
-	 	var baseImgDims = [baseImgUr[0] - baseImgLl[0], baseImgUr[1] - baseImgLl[1]];
+		if (o.globe == true && o.projection.projection.includes('Orthographic')) {
+			const topPointLat = 180 - (o.globeCenter[1] + 90) // this is the latitude of the top point of the rotated sphere
+			const bottomPointLat = o.globeCenter[1] - 90 // this is the latitude of the top point of the rotated sphere
+			const lP = projection([o.globeCenter[0], bottomPointLat]);
+			const uP = projection([o.globeCenter[0] - 180, topPointLat]);
+			const cent = projection(o.globeCenter)
+			const baseImgDims = [lP[1] - uP[1], lP[1] -uP[1]]; // same width and height for the globe
+			baseImage.append('svg:image').attr('x', cent[0] - baseImgDims[0]/2).attr('y', cent[1] - baseImgDims[1]/2)
+				.attr('xlink:href', o.baseImageLayer).attr('width', Math.abs(baseImgDims[0])).attr('height', Math.abs(baseImgDims[1]))
+				.attr('clip-path', 'url(#outClip)');
+		} else {
+			const baseImgLl = projection(o.baseImgBounds[0]);
+	 		const baseImgUr = projection(o.baseImgBounds[1]);
+	  		//width and height of image in projected pixels
+	 		var baseImgDims = [baseImgUr[0] - baseImgLl[0], baseImgUr[1] - baseImgLl[1]];
 
-		baseImage.append('svg:image').attr('x', baseImgLl[0]).attr('y', baseImgUr[1])
-			.attr('xlink:href', o.baseImageLayer).attr('width', Math.abs(baseImgDims[0])).attr('height', Math.abs(baseImgDims[1]))
-			.attr('clip-path', 'url(#outClip)');
-
+			baseImage.append('svg:image').attr('x', baseImgLl[0]).attr('y', baseImgUr[1])
+				.attr('xlink:href', o.baseImageLayer).attr('width', Math.abs(baseImgDims[0])).attr('height', Math.abs(baseImgDims[1]))
+				.attr('clip-path', 'url(#outClip)');
+		}
 	};
 	//>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 	//>>>>>>>>>>>>>>>>>>>>>>> load image (raster file) >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>

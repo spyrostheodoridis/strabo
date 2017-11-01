@@ -79,7 +79,7 @@ and the columns names are 'x' for longitude and 'y' for latitude and 'Altitude' 
 # first clip the raster (it's in wgs84) to the desired extent. The one we use is the Blue Marble raster without the sea
 gdalwarp -te -10 30 120 70 worldMarbleNoWater.tif short.tif -overwrite
 # then convert it to orthographic projection. lon_0 and lat_0 correspond to the rotation we apply
-gdalwarp -t_srs '+proj=ortho +ellps=WGS84 +datum=WGS84 +lon_0=40 +lat_0=60 +units=m +no_defs' --config CENTER_LONG 40 short.tif shortOrtho.tif -overwrite
+gdalwarp -t_srs '+proj=ortho +ellps=WGS84 +datum=WGS84 +lon_0=40 +lat_0=60 +units=m +no_defs' short.tif shortOrtho.tif -overwrite
 # finally convert it to png
 gdal_translate shortOrtho.tif shortOrtho.png -of PNG -outsize 20% 20%
 ```
@@ -116,8 +116,10 @@ const mapPars = {
 	//>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>layer data parameters>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 	// png image
 	plotBaseImage: true, // image should be projected in the same coordinate system as above
-	baseImageLayer: 'testOrtho.png',
-	baseImgBounds: [[-3.0027847026909136, 13.418902735883536], [143.59043502752442, 28.66678729004727]],
+	baseImageLayer: 'shortOrtho.png',
+	baseImgBounds: [[-3.0027847026909136, 13.418902735883536], [143.59043502752442, 28.66678729004727]], //lower left, upper right
+	globe: false, // true in case the image is the full globe in orthographic projection
+	//globeCenter: [40.00114624013347, 59.990891679885756], // lon_0 and lat_0 (center) of the globe image
 	// canvas data parameters
 	plotCanvas: false,
 	//canvasSrc: '', //the json source file
