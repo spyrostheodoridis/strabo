@@ -15,7 +15,7 @@ geo2topo world_10m.json > world_10m.topojson -q 1000000
 Notes:
 1. For topo / geojson files use the standard EPSG:4326 projection to make sure that all coordinates are in WGS84 datum. D3 will take care of the reprojection
 2. The world topojson file can be directly downloaded from this repository
-3. You may need to open world_10m.json with a text editor and change "translate":[--179.999999,-90] to "translate":[-180,-90]
+3. Sepending on the projection, you may need to open world_10m.json with a text editor, go at the end of the file, and change "translate":[-179.999999,-90] to "translate":[-180,-90] (for Orthographic) or to [-180, 89.99999] (for Equirectangular or Mollweide)
 
 The configurable html code below applies to all cases.
 ```html
