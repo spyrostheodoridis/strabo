@@ -78,7 +78,7 @@ function plotMap(o){
 		if (o.plotGraticule === true) { grat.append('path').datum(graticule).attr('class', 'graticule').attr('d', path); }
 
 		if (o.plotOutline === true) { 
-			if (o.projection.projection.includes('Orthographic')) { // there's a small line popping kn at the north pole therefore do the following
+			if (o.projection.projection.includes('Orthographic')) { // there's a small line popping at the north pole therefore do the following
 				main.append('defs').append('path').datum({type: 'Sphere'}).attr('id', 'sphere').attr('d', path);
 				grat.append('use').attr('class', 'graticule').attr('xlink:href', '#sphere');
 
