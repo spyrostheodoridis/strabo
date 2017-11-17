@@ -106,6 +106,7 @@ const mapPars = {
 	plotCoast: false,
 	plotBase: true,
 	plotGratText: false,
+	barTextDigits: 1,
 
 	//color maps
 	//colMapImg: d3.scaleLinear().interpolate(d3.interpolateHslLong).range(['red', 'blue']),
@@ -190,6 +191,7 @@ const mapPars = {
 	plotCoast: false,
 	plotBase: false,
 	plotGratText: false,
+	barTextDigits: 1,
 
 	//color maps
 	colMapImg: d3.scaleLinear().interpolate(d3.interpolateHslLong).range(['blue', 'red']),
@@ -232,6 +234,7 @@ const mapPars = {
 	plotCoast: true,
 	plotBase: false,
 	plotGratText: false,
+	barTextDigits: 1,
 
 	//color maps
 	colMapVct: d3.scaleLinear().interpolate(d3.interpolateHslLong).range(['blue', 'red']),

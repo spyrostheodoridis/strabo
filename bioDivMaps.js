@@ -221,7 +221,7 @@ function plotMap(o){
 					.attr('height', projRasterHeight).attr('width', projRasterWidth)
 					.attr('transform', 'translate(' + x0 + ',' + y0 +')');
 
-			plotColBar(colorBars, o.rBarX, o.rBarY, 100, 20, 100, datExt, o.colMapImg);
+			plotColBar(colorBars, o.rBarX, o.rBarY, 100, 20, 100, datExt, o.colMapImg, o.barTextDigits);
 		}		
 	)};
 
@@ -245,7 +245,7 @@ function plotMap(o){
 	  		.style('fill', function(d) {return o.colMapVct(d.properties.DN / o.vctDataScale);})
 	  		.style('stroke', function(d) {return o.colMapVct(d.properties.DN / o.vctDataScale);});
 
-	  	plotColBar(colorBars, o.vBarX, o.vBarY, 100, 20, 100, vctExt, o.colMapVct);
+	  	plotColBar(colorBars, o.vBarX, o.vBarY, 100, 20, 100, vctExt, o.colMapVct, o.barTextDigits);
 
 		} else if (o.vctFormat === 'gJson') {
 			var features = vData.features;
@@ -261,7 +261,7 @@ function plotMap(o){
 	      		.style('fill', function(d) {return o.colMapVct(d.properties.DN / o.vctDataScale);})
 	      		.style('stroke', function(d) {return o.colMapVct(d.properties.DN / o.vctDataScale);});
 
-	      	plotColBar(colorBars, o.vBarX, o.vBarY, 100, 20, 100, vctExt, o.colMapVct);
+	      	plotColBar(colorBars, o.vBarX, o.vBarY, 100, 20, 100, vctExt, o.colMapVct, o.barTextDigits);
 			
 			};
 		})
@@ -281,7 +281,7 @@ function plotMap(o){
 					}
 				})
 				o.colPoint.domain(pointsExtent)
-				plotColBar(colorBars, o.pBarX, o.pBarY, 100, 20, 100, pointsExtent, o.colPoint);
+				plotColBar(colorBars, o.pBarX, o.pBarY, 100, 20, 100, pointsExtent, o.colPoint, o.barTextDigits);
 			};
 
 			pointLayer.selectAll('points').data(data).enter().append('circle').attr('clip-path', 'url(#outClip)').attr('r', o.pointR).attr('class', 'points')
@@ -314,7 +314,7 @@ function inside(point, vs) {
 };
 
 // function to plot color bar
-function plotColBar(container, x, y, width, height, sections, dataExt, colScale, text = true) {
+function plotColBar(container, x, y, width, height, sections, dataExt, colScale, barTextDigits, text = true) {
 	var values = [];
 	if (sections > width) { var sections = width; } // correct number of sections in case they are more than the width pixels
 	const sectionWidth = width / sections;
@@ -327,8 +327,11 @@ function plotColBar(container, x, y, width, height, sections, dataExt, colScale,
 		.style('fill', function (d) { return colScale(dataExt[0] + ((dataExt[1] - dataExt[0])/(sections-1))*d) }) // -1 is used for the section to correspond to the last color
 		.style('stroke-width', 0).style('shape-rendering', 'crispEdges');
 
+	container.append('rect').attr('x', x).attr('y', y).attr('width', width).attr('height', height)
+		.style('fill', 'none').style('stroke', 'black').style('stroke-width', 1);
+
 	if (text === true) {
-		container.selectAll('.colText').data(dataExt).enter().append('text').text(function (d) {return d.toFixed(1)} ) 
+		container.selectAll('.colText').data(dataExt).enter().append('text').text(function (d) {return d.toFixed(barTextDigits)} ) 
 			.attr('x', function (d,i) {return x + i*width} ).attr('y', y + height).attr('dx', '-0.75em').attr('dy', '1.2em');
 	}
 };
