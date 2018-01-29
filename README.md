@@ -120,7 +120,7 @@ And the two CSS rules
 }
 ```
 
-![alt text](https://raw.githubusercontent.com/spyrostheodoridis/anaximander/master/examples/exampl1.png)
+![alt text](https://raw.githubusercontent.com/spyrostheodoridis/anaximander/examples/exampl1.png)
 
 
 
