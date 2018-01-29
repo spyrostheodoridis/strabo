@@ -125,7 +125,8 @@ And the two CSS rules
 We can also plot simple points colored according to their attributes. In this example we combine the same image as above
 in polar orthographic projection (sphere = true) with points that represent plant populations. The points are colored according to
 the altitude where the populations leave. In the case of full extent orthographic projections no imgBounds are necessary (actually they are not defined!)
-We also add some text for the parallels and meridians.
+We also add the coastline. Instead of plotting the outline of the graticule (which leaves the antimeridian clip), we plot a circle
+around the image using the sphereR (= 160) argument.
 
 ```bash
 gdalwarp -te -180 0 180 90 worldMarbleNoWater.tif short.tif -overwrite
@@ -134,9 +135,10 @@ gdal_translate shortOrtho.tif shortOrtho.png -of PNG -outsize 20% 20%
 ```
 
 ```html
-.land {
-    fill: grey;
-    fill-opacity: 0.3;
+.coast {
+    fill: none;
+    stroke: grey;
+    stroke-width: 0.3;
 
 .graticuleLines {
     fill: none;
@@ -162,7 +164,7 @@ gdal_translate shortOrtho.tif shortOrtho.png -of PNG -outsize 20% 20%
 
     svg.append('g').attr('id', 'grat')
     svg.append('g').attr('id', 'img')
-    svg.append('g').attr('id', 'gratTxt')
+    svg.append('g').attr('id', 'coast')
     svg.append('g').attr('id', 'points')
     svg.append('g').attr('id', 'colBarPoint')
 
@@ -176,8 +178,8 @@ gdal_translate shortOrtho.tif shortOrtho.png -of PNG -outsize 20% 20%
                   base = baseProj,
                   step = [20, 20],
                   plotGratLines = true,
-                  plotOutline = true,
-                  sphereR = 0,
+                  plotOutline = false,
+                  sphereR = 160,
                   plotGratText = false,
                   cssStyle = 'graticuleLines',
                   latTxtLon = 0,
@@ -185,18 +187,13 @@ gdal_translate shortOrtho.tif shortOrtho.png -of PNG -outsize 20% 20%
                   lonOff = 0,
                   latOff = 0);
 
-    plotGraticule(container = 'gratTxt',
-                  base = baseProj,
-                  step = [20, 20],
-                  plotGratLines = false,
-                  plotOutline = false,
-                  sphereR = 0,
-                  plotGratText = true,
-                  cssStyle = 'lonLatLabels',
-                  latTxtLon = -170,
-                  lonTxtLat = 0,
-                  lonOff = 0,
-                  latOff = 0);
+    plotBase(container ='coast',
+            base = baseProj, topoFile = 'world_10m.topojson',
+            geomName = 'world_10m',
+            plotCoast = true,
+            plotLand = false,
+            plotCountries = false,
+            cssStyle = 'coast');
 
     plotImage(container = 'img',
               base = baseProj,
