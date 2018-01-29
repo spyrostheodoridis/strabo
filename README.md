@@ -72,7 +72,6 @@ var svg = d3.select("body").append("svg")
 svg.append('g').attr('id', 'grat')
 svg.append('g').attr('id', 'land')
 svg.append('g').attr('id', 'img')
-svg.append('g').attr('id', 'boarders')
 
 var baseProj = baseMap(container = 'main',
                         projection = 'Orthographic',
@@ -123,13 +122,87 @@ And the two CSS rules
 ![alt text](examples/exampl1.png?raw=true)
 
 
+We can also plot images that cover the whole sphere face setting the sphere argument to true. In this case no imgBounds are necessary (actually they are not defined!)
+We also add some text for the parallels and meridians.
 
+```bash
+gdalwarp -te -180 0 180 90 worldMarbleNoWater.tif short.tif -overwrite
+gdalwarp -t_srs '+proj=ortho +lon_0=0 +lat_0=90 +x_0=0.0 +y_0=0 +units=m +no_defs ' short.tif shortOrtho.tif -overwrite
+gdal_translate shortOrtho.tif shortOrtho.png -of PNG -outsize 20% 20%
+```
 
+```html
+<style>
+.land {
+    fill: grey;
+    fill-opacity: 0.3;
 
+.graticuleLines {
+    fill: none;
+    stroke: grey;
+    stroke-width: 0.5;
+}
 
+.lonLatLabels {
+    font-size: 14px;
+    alignment-baseline: middle;
+    text-anchor: middle;
+    fill: red;
+}
+```
 
+```javascript
 
+<script type="text/javascript">
+    var svg = d3.select("body").append("svg")
+    .attr("width", '600')
+    .attr("height", '600')
+    .attr("id", "main");
 
+    svg.append('g').attr('id', 'grat')
+	svg.append('g').attr('id', 'land')
+	svg.append('g').attr('id', 'img')
+	svg.append('g').attr('id', 'gratTxt')
 
+	var baseProj = baseMap(container = 'main',
+                        projection = 'Orthographic',
+                        rotate = [0, -90, 0],
+                        clAngle = 90, 
+                        extentBounds = [[-180, 0], [179.9999, 90]]);
+    
+    plotGraticule(container = 'grat',
+                base = baseProj,
+                step = [20, 20],
+                plotGratLines = true,
+                plotOutline = true,
+                sphereR = 0,
+                plotGratText = false,
+                cssStyle = 'graticuleLines',
+                latTxtLon = 0,
+                lonTxtLat = 0,
+                lonOff = 0,
+                latOff = 0);
 
+    plotGraticule(container = 'gratTxt',
+                base = baseProj,
+                step = [20, 20],
+                plotGratLines = false,
+                plotOutline = false,
+                sphereR = 0,
+                plotGratText = true,
+                cssStyle = 'lonLatLabels',
+                latTxtLon = -170,
+                lonTxtLat = 0,
+                lonOff = 0,
+                latOff = 0);
+
+    plotImage(container = 'img',
+            base = baseProj,
+            imageFile = 'world.png',
+            imgBounds = [],
+            imgCenter = [],
+            sphere = true)
+```
+
+![alt text](examples/exampl2.png?raw=true)
 
