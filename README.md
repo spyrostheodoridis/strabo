@@ -168,11 +168,11 @@ gdal_translate shortOrtho.tif shortOrtho.png -of PNG -outsize 20% 20%
     svg.append('g').attr('id', 'points')
     svg.append('g').attr('id', 'colBarPoint')
 
-	var baseProj = baseMap(container = 'main',
-                          projection = 'Orthographic',
-                          rotate = [0, -90, 0],
-                          clAngle = 90, 
-                          extentBounds = [[-180, 0], [179.9999, 90]]);
+    var baseProj = baseMap(container = 'main',
+                           projection = 'Orthographic',
+                           rotate = [0, -90, 0],
+                           clAngle = 90, 
+                           extentBounds = [[-180, 0], [179.9999, 90]]);
     
     plotGraticule(container = 'grat',
                   base = baseProj,
