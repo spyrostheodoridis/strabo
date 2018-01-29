@@ -1,6 +1,5 @@
 index.html
 .DS_Store
-*.png
 *.csv
 *.tif
 *.json
