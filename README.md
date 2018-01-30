@@ -2,7 +2,7 @@
 
 Anaximander: one of the first Greek philosophers to work on the fields of what we now call geography and biology.
 
-The anaximander library can be used for creating physical geography oriented maps for the web (or for scientific publications). The module is written in Javascript. It takes advantage of the 
+The anaximander library can be used for creating physical geography oriented maps for the web (or for scientific publications). It takes advantage of the 
 powerful d3.js visualization library (https://d3js.org/) and the HTML canvas element (https://www.w3schools.com/html/html5_canvas.asp) for efficient handling of big raster data sets.
 It aims at providing researchers with a tool to accurately and effectively visualize spatial information.
 
