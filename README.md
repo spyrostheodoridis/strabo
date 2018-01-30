@@ -4,10 +4,10 @@ Anaximander: one of the first Greek philosophers to work on the fields of what w
 
 The anaximander library can be used for creating biodiversity oriented maps for the web (or for scientific publications). The module is written in Javascript. It takes advantage of the 
 powerful d3.js visualization library (https://d3js.org/) and the HTML canvas element (https://www.w3schools.com/html/html5_canvas.asp) for efficient handling of big raster data sets.
-It aims at providing researchers with a tool to accurately and effectively visualize spatial information
+It aims at providing researchers with a tool to accurately and effectively visualize spatial information.
 
-The library is divided in several modules that all depend on a basic module (the baseMap function). In the baseMap module, the user
-defines the map projections and extent. All other modules rely on this information to plot features and images. The style of the elements
+The library is divided in several modules that all depend on a basic module (the baseMap function). In the baseMap module the user
+defines the map projection and extent. All other modules rely on this information to plot features and images. The style of the elements
 can be partly defined using CSS rules. Style definitions will be extended in future versions. Additionally, all the modules
 that use custom colors, export the color scale information that can be used by the plotColBar module (color legend).
 
@@ -49,9 +49,9 @@ Then prepare the image. I am using the gdal library for all transformations.
 # first clip the raster (it's in wgs84) to the desired extent. The one we use is the Blue Marble raster without the sea
 gdalwarp -te -10 30 120 70 worldMarbleNoWater.tif short.tif -overwrite
 # then convert it to orthographic projection. lon_0 and lat_0 correspond to the rotation we apply
-gdalwarp -t_srs '+proj=ortho +lon_0=60 +lat_0=50 +x_0=0.0 +y_0=0 +units=m +no_defs ' short.tif shortOrtho.tif -overwrite
+gdalwarp -wo SOURCE_EXTRA=200 -wo SAMPLE_GRID=YES -t_srs '+proj=ortho +lon_0=60 +lat_0=50 +x_0=0.0 +y_0=0 +units=m +no_defs ' short.tif shortOrtho.tif -overwrite
 # finally convert it to png
-gdal_translate shortOrtho.tif shortOrtho.png -of PNG -outsize 20% 20%
+gdal_translate shortOrtho.tif world.png -of PNG -outsize 20% 20%
 ```
 
 We also need to get the png center and at least one edge point in lon/lat datum. This can be done using gdalinfo. We use the following points:  
@@ -125,13 +125,13 @@ And the two CSS rules
 We can also plot simple points colored according to their attributes. In this example we combine the same image as above
 in polar orthographic projection (sphere = true) with points that represent plant populations. The points are colored according to
 the altitude where the populations leave. In the case of full extent orthographic projections no imgBounds are necessary (actually they are not defined!)
-We also add the coastline. Instead of plotting the outline of the graticule (which leaves the antimeridian clip), we plot a circle
-around the image using the sphereR (= 160) argument.
+We also add the coastline. Instead of plotting the outline of the graticule (which leaves the antimeridian clip line), we plot a circle
+around the image using the sphereR (radius = 90 degrees) argument.
 
 ```bash
 gdalwarp -te -180 0 180 90 worldMarbleNoWater.tif short.tif -overwrite
-gdalwarp -t_srs '+proj=ortho +lon_0=0 +lat_0=90 +x_0=0.0 +y_0=0 +units=m +no_defs ' short.tif shortOrtho.tif -overwrite
-gdal_translate shortOrtho.tif shortOrtho.png -of PNG -outsize 20% 20%
+gdalwarp wo SOURCE_EXTRA=200 -wo SAMPLE_GRID=YES -t_srs '+proj=ortho +lon_0=0 +lat_0=90 +x_0=0.0 +y_0=0 +units=m +no_defs ' short.tif shortOrtho.tif -overwrite
+gdal_translate shortOrtho.tif world.png -of PNG -outsize 20% 20%
 ```
 
 ```html
@@ -179,7 +179,7 @@ gdal_translate shortOrtho.tif shortOrtho.png -of PNG -outsize 20% 20%
                   step = [20, 20],
                   plotGratLines = true,
                   plotOutline = false,
-                  sphereR = 160,
+                  sphereR = 90,
                   plotGratText = false,
                   cssStyle = 'graticuleLines',
                   latTxtLon = 0,
@@ -223,3 +223,107 @@ gdal_translate shortOrtho.tif shortOrtho.png -of PNG -outsize 20% 20%
 
 ![alt text](examples/exampl2.png?raw=true)
 
+
+### Plot vectors
+In this example, we plot Lakes in vector format (polygon geometries) and color them according to their rank provided by Natural Earth.
+Download the respective file (http://www.naturalearthdata.com/downloads/50m-physical-vectors/50m-lakes-reservoirs/) and convert it to geojson.
+The map is in Lambert Conic Conformal projection rotated at 20 longitude. We also add a scale bar.
+
+```bash
+ogr2ogr -f GeoJSON -t_srs EPSG:4326 lakes_50m.json ne_50m_lakes/ne_50m_lakes.shp
+```
+
+```html
+.coast {
+    fill: none;
+    stroke: black;
+    stroke-width: 0.3;
+}
+.vectorFeatures{
+    fill-opacity: 0.7;
+    fill: blue;
+}
+
+.legendTxt{
+    font-size: 14px;
+}
+```
+
+```javascript
+svg.append('g').attr('id', 'grat')
+svg.append('g').attr('id', 'gratTxt')
+svg.append('g').attr('id', 'vector')
+svg.append('g').attr('id', 'coast')
+svg.append('g').attr('id', 'scale')
+svg.append('g').attr('id', 'colBar')
+
+var baseProj = baseMap(container = 'main',
+                        projection = 'ConicConformal',
+                        rotate = [-20, 0, 0],
+                        clAngle = 0, 
+                        extentBounds = [[0, 50], [40, 70]]);
+    
+plotGraticule(container = 'grat',
+            base = baseProj,
+            step = [5, 5],
+            plotGratLines = true,
+            plotOutline = true,
+            sphereR = 0,
+            plotGratText = false,
+            cssStyle = 'graticuleLines',
+            latTxtLon = 0,
+            lonTxtLat = 0,
+            lonOff = 0,
+            latOff = 0);
+
+plotGraticule(container = 'gratTxt',
+            base = baseProj,
+            step = [5, 5],
+            plotGratLines = false,
+            plotOutline = false,
+            sphereR = 0,
+            plotGratText = true,
+            cssStyle = 'lonLatLabels',
+            latTxtLon = 0,
+            lonTxtLat = 50,
+            lonOff = 10,
+            latOff = -10);
+
+plotScale('scale', baseProj, 15, 53, 200)
+
+plotBase(container ='coast',
+        base = baseProj, topoFile = 'world_10m.topojson',
+        geomName = 'world_10m',
+        plotCoast = true,
+        plotLand = false,
+        plotCountries = false,
+        cssStyle = 'coast');
+
+var colSclVector = plotVector(container = 'vector', 
+                                  base = baseProj, 
+                                  vectorFile = 'lakes_50m.json', 
+                                  vctFormat = 'geoJson',
+                                  geomName = '', 
+                                  vctProperty = 'scalerank', 
+                                  excludeValues = [],
+                                  vctDataScale = 1, 
+                                  colorScale = 'Linear', 
+                                  colorRange = ['#37FDFC', '#0276FD'], 
+                                  cssStyle = 'vectorFeatures', 
+                                  renderCanvas = false,
+                                  canvasWidth = null,
+                                  canvasHeight = null);
+
+setTimeout(function() { plotColBar(container = 'colBar',
+                                   x = 350, y = 470,
+                                   width = 130, height = 20, 
+                                   colScale = colSclVector, 
+                                   nOfSections = 150, 
+                                   text = true, 
+                                   barTextDigits = 0, 
+                                   barTitle = 'Lake Rank', 
+                                   horizontal = true,
+                                   cssStyle = 'legendTxt'); }, 50);
+```
+
+![alt text](examples/exampl3.png?raw=true)

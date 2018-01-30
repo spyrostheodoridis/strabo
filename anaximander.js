@@ -71,7 +71,7 @@ function plotGraticule(container, base, step, plotGratLines = false, plotOutline
     if (sphereR){
         const pc = [base.projection.center()[0] - base.projection.rotate()[0], base.projection.center()[1] - base.projection.rotate()[1]]
         container.append('path')
-        .attr('d', path(d3.geoCircle().center(pc).radius(sphereR).precision(1)()))
+        .attr('d', path(d3.geoCircle().center(pc).radius(sphereR).precision(0.5)()))
             .attr('class', cssStyle);
     };
 
@@ -322,7 +322,7 @@ function plotPoints(container, base, pointFile, pointR, colorVar, colorScale, co
 }
 
 
-function plotVector(container, base, vectorFile, vctFormat, geomName = '', vctProperty, excludeValues, vctDataScale, colorScale, colorRange, cssStyle = '', renderCanvas = false){
+function plotVector(container, base, vectorFile, vctFormat, geomName, vctProperty, excludeValues, vctDataScale, colorScale, colorRange, cssStyle = '', renderCanvas = false, canvasWidth, canvasHeight){
 
 	const clipID = container + 'Clip'
 
@@ -345,14 +345,14 @@ function plotVector(container, base, vectorFile, vctFormat, geomName = '', vctPr
 		var fo = container.append('foreignObject')
     		.attr("x", 0)
     		.attr("y", 0)
-    		.attr("width", 600)
-    		.attr("height", 600)
+    		.attr("width", canvasWidth)
+    		.attr("height", canvasWidth)
 
 		 contx = fo.append('xhtml:canvas')
-			.attr('width', ratio*600)
-			.attr('height', ratio*600)
-			.style('width', '600px')
-			.style('height', '600px')
+			.attr('width', ratio*canvasWidth)
+			.attr('height', ratio*canvasHeight)
+			.style('width', canvasWidth + 'px')
+			.style('height', canvasHeight + 'px')
 			.attr('id', 'vCanvas').node().getContext('2d');
 
 		contx.scale(ratio, ratio)
@@ -411,14 +411,22 @@ function plotVector(container, base, vectorFile, vctFormat, geomName = '', vctPr
 			contx.beginPath();
 			path(base.graticule.outline());
 			contx.clip();
+			//get style
+			var fillOpac = d3.select('.'+cssStyle).style('fill-opacity')
+			var strokeOpac = d3.select('.'+cssStyle).style('stroke-opacity')
 		};
 
 		// render features
 		d3.selectAll('.'+ cssStyle).each(function(d, i){
 				
 			if (renderCanvas === true) {
-				contx.strokeStyle = colScl(d.properties[vctProperty] / vctDataScale || d.properties[vctProperty]);
-				contx.fillStyle = colScl(d.properties[vctProperty] / vctDataScale || d.properties[vctProperty]);
+				fillCol = d3.rgb(colScl(d.properties[vctProperty] / vctDataScale || d.properties[vctProperty]));
+				fillCol.opacity = +fillOpac;
+				strokeCol = d3.rgb(colScl(d.properties[vctProperty] / vctDataScale || d.properties[vctProperty]));
+				strokeCol.opacity = +strokeOpac;
+				contx.fillStyle = fillCol.toString();
+				contx.strokeStyle = strokeCol.toString();
+				
 				contx.beginPath();
 				path(d);
     			contx.fill();
@@ -658,7 +666,7 @@ function inside(point, vs) {
 };
 
 // function to plot color bar
-function plotColBar(container, x, y, width, height, colScale, nOfSections = 100, text = true, barTextDigits, barTitle, horizontal = true) {
+function plotColBar(container, x, y, width, height, colScale, nOfSections, text, barTextDigits, barTitle, horizontal, cssStyle) {
 	
 	var container = d3.select('#' + container);
 	const leg = container.append('g').attr('id', 'bar');
@@ -714,6 +722,7 @@ function plotColBar(container, x, y, width, height, colScale, nOfSections = 100,
 			barText.selectAll('.colText')
 				.data(dataExt)
 			  .enter().append('text')
+			  	.attr('class', cssStyle)
 			    .text(function (d) {return d.toFixed(barTextDigits) } )
 			    .each(function(d,i) {
 			    	d3.select(this)
@@ -752,6 +761,7 @@ function plotColBar(container, x, y, width, height, colScale, nOfSections = 100,
 			barText.selectAll('.colText')
 				.data(colScale.domain())
 			  .enter().append('text')
+			    .attr('class', cssStyle)
 			    .text(function (d) {return (typeof d === 'string') ? d: d.toFixed(barTextDigits) } )
 			    .each(function(d,i) {
 			    	d3.select(this)
@@ -766,6 +776,7 @@ function plotColBar(container, x, y, width, height, colScale, nOfSections = 100,
 	// bar title
 	barText.append('text')
 		.text(barTitle)
+		.attr('class', cssStyle)
 		.attr('x', (horizontal) ? x + (nWidth+3)/2 : x + (nHeight+3)/2 )
 		.attr('y', y - 7)
 		.attr('text-anchor', 'middle');
