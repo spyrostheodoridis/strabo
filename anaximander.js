@@ -456,7 +456,7 @@ function plotVector(container, base, vectorFile, vctFormat, geomName, vctPropert
 }
 
 
-function plotRaster(container, base, imgFile, dataScale, excludeValues = [], colorScale, colorRange, rScale = 150, sphere = false){
+function plotRaster(container, base, rasterFile, dataScale, excludeValues = [], colorScale, colorRange, rScale = 150, sphere = false){
 
 	const clipID = container + 'Clip'
 
@@ -477,11 +477,11 @@ function plotRaster(container, base, imgFile, dataScale, excludeValues = [], col
     const ppList = clipP.replace('M', '').replace('Z', '').split('L')
     ppList.forEach(function(d, i){
         ppList[i] = d.split(',').map(v=>+v)
-    })
+    });
 
 	const colScl = eval('d3.scale' + colorScale + '()'); // outside of data function for export
 
-	d3.json(imgFile, function(error, data) {
+	d3.json(rasterFile, function(error, data) {
 		if (error) return console.log(error);
 
 		const rasW = data.width; //raster resolution stored in the json file
@@ -501,7 +501,7 @@ function plotRaster(container, base, imgFile, dataScale, excludeValues = [], col
 		} else{
 
 			//define the attributes of the layer
-			const projCenter = base.projection(data.center);
+			var projCenter = base.projection(data.center);
 			const projUlBound = base.projection(data.upLeft);
 			const projUrBound = base.projection(data.upRight);
 			const projLlBound = base.projection(data.loLeft);

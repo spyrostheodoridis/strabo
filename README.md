@@ -2,7 +2,7 @@
 
 Anaximander: one of the first Greek philosophers to work on the fields of what we now call geography and biology.
 
-The anaximander library can be used for creating biodiversity oriented maps for the web (or for scientific publications). The module is written in Javascript. It takes advantage of the 
+The anaximander library can be used for creating physical geography oriented maps for the web (or for scientific publications). The module is written in Javascript. It takes advantage of the 
 powerful d3.js visualization library (https://d3js.org/) and the HTML canvas element (https://www.w3schools.com/html/html5_canvas.asp) for efficient handling of big raster data sets.
 It aims at providing researchers with a tool to accurately and effectively visualize spatial information.
 
@@ -18,10 +18,10 @@ Before we start, download the required libraries and include the following heade
 
 <head>
     <meta charset="utf-8"/>
-    <script src="d3.v4.min.js"></script> 
-    <script src="d3-geo-projection.v2.min.js"></script>
-    <script src="topojson.v2.min.js"></script>
-    <script src="turf.min.js"></script>
+    <script src="js/d3.v4.min.js"></script> 
+    <script src="js/d3-geo-projection.v2.min.js"></script>
+    <script src="js/topojson.v2.min.js"></script>
+    <script src="js/turf.min.js"></script>
     <script src="anaximander.js"></script>
     <title>Anaximander</title>
 </head>
@@ -225,7 +225,7 @@ gdal_translate shortOrtho.tif world.png -of PNG -outsize 20% 20%
 
 
 ### Plot vectors
-In this example, we plot Lakes in vector format (polygon geometries) and color them according to their rank provided by Natural Earth.
+In this example, we plot Lakes of northern Europe in vector format (polygon geometries) and color them according to their rank provided by Natural Earth.
 Download the respective file (http://www.naturalearthdata.com/downloads/50m-physical-vectors/50m-lakes-reservoirs/) and convert it to geojson.
 The map is in Lambert Conic Conformal projection rotated at 20 longitude. We also add a scale bar.
 
@@ -327,3 +327,130 @@ setTimeout(function() { plotColBar(container = 'colBar',
 ```
 
 ![alt text](examples/exampl3.png?raw=true)
+
+### Plot rasters
+Raster datasets can be quite heavy for visualization programs to process. Anaximander utilizes the canvas element to make
+this task easier for the browsers. In the following example we plot the annual mean temperature (http://chelsa-climate.org/) in Greece. The raster was obtained at
+at 30 arc second (~1 km<sup>2</sup>) resolution. We first need to transform the raster to json format that can used from Javascript. For that, 
+I use a function from the chorospy package (https://github.com/spyrostheodoridis/chorospy). The map is in Transverse Mercator projection rotate by 21 degrees (the central meridian of UTM zone 34).
+
+```bash
+# first clip the raster (use wgs84 coordoinates) to the desired extent
+gdalwarp -te  15 33 30 43  -t_srs EPSG:4326 CHELSA_bio10_1.tif climClip.tif -overwrite
+#transform
+gdalwarp  -wo SOURCE_EXTRA=200 -wo SAMPLE_GRID=YES -t_srs '+proj=utm +zone=34 +ellps=WGS84 +datum=WGS84 +units=m +no_defs ' climClip.tif climD3.tif -overwrite
+```
+
+then in python
+```python
+chorospy.rasterToJSON('climD3.tif', 'climD3.json')
+```
+
+and finally in the html file
+
+```html
+.graticuleLines {
+    fill: none;
+    stroke: lightgrey;
+    stroke-width: 1;
+}
+.lonLatLabels {
+    font-size: 14px;
+    alignment-baseline: middle;
+    text-anchor: middle;
+    fill: black;
+}
+
+.scaleBar {
+    stroke: black;
+    stroke-width: 2px;
+    fill: none;
+}
+.coast {
+    fill: none;
+    stroke: black;
+    stroke-width: 0.3;
+}
+
+.legendTxt{
+    font-size: 14px;
+}
+```
+
+```javascript
+
+svg.append('g').attr('id', 'grat')
+svg.append('g').attr('id', 'gratTxt')
+vg.append('g').attr('id', 'canvas')
+svg.append('g').attr('id', 'coast')
+svg.append('g').attr('id', 'scale')
+svg.append('g').attr('id', 'colBar')
+
+
+var baseProj = baseMap(container = 'main',
+                        projection = 'TransverseMercator',
+                        rotate = [-21, 0, 0],
+                        clAngle = 0, 
+                        extentBounds = [[19, 34], [28, 45]]);
+    
+plotGraticule(container = 'grat',
+            base = baseProj,
+            step = [5, 5],
+            plotGratLines = true,
+            plotOutline = true,
+            sphereR = 0,
+            plotGratText = false,
+            cssStyle = 'graticuleLines',
+            latTxtLon = 0,
+            lonTxtLat = 0,
+            lonOff = 0,
+            latOff = 0);
+
+plotGraticule(container = 'gratTxt',
+            base = baseProj,
+            step = [5, 5],
+            plotGratLines = false,
+            plotOutline = false,
+            sphereR = 0,
+            plotGratText = true,
+            cssStyle = 'lonLatLabels',
+            latTxtLon = 19,
+            lonTxtLat = 45,
+            lonOff = -10,
+            latOff = -10);
+
+
+plotScale('scale', baseProj, 20, 35, 100)
+
+plotBase(container ='coast',
+        base = baseProj, topoFile = 'world_10m.topojson',
+        geomName = 'world_10m',
+        plotCoast = true,
+        plotLand = false,
+        plotCountries = false,
+        cssStyle = 'coast');
+
+var colSclImg = plotRaster(container = 'canvas', 
+                               base = baseProj, 
+                               rasterFile = 'climD3.json', 
+                               dataScale = 10, 
+                               excludeValues = [], 
+                               colorScale = 'Linear', 
+                               colorRange = ['blue', 'red'], 
+                               rScale = 10, 
+                               sphere = false);
+    
+
+setTimeout(function() { plotColBar(container = 'colBar',
+                                   x = 350, y = 70,
+                                   width = 130, height = 20, 
+                                   colScale = colSclImg, 
+                                   nOfSections = 150, 
+                                   text = true, 
+                                   barTextDigits = 1, 
+                                   barTitle = 'Annual Mean Temperature (C°)', 
+                                   horizontal = true,
+                                   cssStyle = 'legendTxt'); }, 5000);
+```
+
+![alt text](examples/exampl4.png?raw=true)
