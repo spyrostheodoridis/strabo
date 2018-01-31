@@ -322,7 +322,7 @@ function plotPoints(container, base, pointFile, pointR, colorVar, colorScale, co
 }
 
 
-function plotVector(container, base, vectorFile, vctFormat, geomName, vctProperty, excludeValues, vctDataScale, colorScale, colorRange, cssStyle = '', renderCanvas = false, canvasWidth, canvasHeight){
+function plotVector(container, base, vectorFile, vctFormat, geomName, vctProperty, excludeValues, vctDataScale, colorScale, colorRange, cssStyle = '', renderCanvas = false, canvasWidth, canvasHeight, cnvRes){
 
 	const clipID = container + 'Clip'
 
@@ -340,7 +340,7 @@ function plotVector(container, base, vectorFile, vctFormat, geomName, vctPropert
 
 	if (renderCanvas === true){
 
-		const ratio = window.devicePixelRatio || 1;
+		var ratio = window.devicePixelRatio || 1;
 
 		var fo = container.append('foreignObject')
     		.attr("x", 0)
@@ -349,13 +349,13 @@ function plotVector(container, base, vectorFile, vctFormat, geomName, vctPropert
     		.attr("height", canvasWidth)
 
 		 contx = fo.append('xhtml:canvas')
-			.attr('width', ratio*canvasWidth)
-			.attr('height', ratio*canvasHeight)
+			.attr('width', ratio*canvasWidth*cnvRes)
+			.attr('height', ratio*canvasHeight*cnvRes)
 			.style('width', canvasWidth + 'px')
 			.style('height', canvasHeight + 'px')
 			.attr('id', 'vCanvas').node().getContext('2d');
 
-		contx.scale(ratio, ratio)
+		contx.scale(ratio*cnvRes, ratio*cnvRes)
 	}
 
 	const colScl = eval('d3.scale' + colorScale + '()'); // outside of data function so it can be exported
