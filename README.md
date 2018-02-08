@@ -1,6 +1,6 @@
 # anaximander
 
-Anaximander: one of the first Greek philosophers to work on the fields of what we now call geography and biology.
+Anaximander was one of the first Greek philosophers to work on the fields of what we now call geography and biology.
 
 The anaximander library can be used for creating physical geography oriented maps for the web (or for scientific publications). It takes advantage of the 
 powerful d3.js visualization library (https://d3js.org/) and the HTML canvas element (https://www.w3schools.com/html/html5_canvas.asp) for efficient handling of big raster data sets.
@@ -11,19 +11,19 @@ defines the map projection and extent. All other modules rely on this informatio
 can be partly defined using CSS rules. Style definitions will be extended in future versions. Additionally, all the modules
 that use custom colors, export the color scale information that can be used by the plotColBar module (color legend).
 
-Before we start, download the required libraries and include the following headers in your .html file 
+Before we start, load the required libraries by including the following headers in your .html file 
 
 ```html
 <!DOCTYPE html>
 
 <head>
     <meta charset="utf-8"/>
-    <script src="js/d3.v4.min.js"></script> 
-    <script src="js/d3-geo-projection.v2.min.js"></script>
-    <script src="js/topojson.v2.min.js"></script>
-    <script src="js/turf.min.js"></script>
+    <script src="https://d3js.org/d3.v5.js"></script>
+    <script src="https://d3js.org/d3-geo-projection.v2.min.js"></script>
+    <script src="https://unpkg.com/topojson@3"></script>
+    <script src='https://npmcdn.com/@turf/turf/turf.min.js'></script>
     <script src="anaximander.js"></script>
-    <title>Anaximander</title>
+    <title>anaximander</title>
 </head>
 ```
 

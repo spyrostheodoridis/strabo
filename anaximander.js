@@ -157,10 +157,10 @@ function plotBase(container, base, topoFile, geomName, plotCoast = false, plotLa
 		.datum(base.graticule.outline)
 		.attr('d', path);
 
-	d3.json(topoFile, function (error, topology) {
-		if (error) return console.log(error); 
+	d3.json(topoFile).then(function (topology) {
 
 		const topoData = topojson.feature(topology, topology.objects[geomName]);
+		console.log(topoData)
 
 		if (plotCountries === true){ container.append('path')
 			.datum(topojson.mesh(topology, topology.objects[geomName], function (a,b) {return a !== b; }))
@@ -264,8 +264,7 @@ function plotPoints(container, base, pointFile, pointR, colorVar, colorScale, co
         ppList[i] = d.split(',').map(v=>+v)
     })
 
-	d3.csv(pointFile, function (error, data) {
-		if (error) return console.log(error);
+	d3.csv(pointFile).then(function (data) {
 
 		// create geojson for points to be used as path
 		geoFeat = {}
@@ -360,8 +359,7 @@ function plotVector(container, base, vectorFile, vctFormat, geomName, vctPropert
 
 	const colScl = eval('d3.scale' + colorScale + '()'); // outside of data function so it can be exported
 
-	d3.json(vectorFile, function(error, vData) {
-		if (error) return console.log(error);
+	d3.json(vectorFile).then(function(vData) {
 
 		if (vctFormat === 'topoJson') {
 			var topoData = topojson.feature(vData, vData.objects[geomName]).features;
@@ -481,8 +479,7 @@ function plotRaster(container, base, rasterFile, dataScale, excludeValues = [], 
 
 	const colScl = eval('d3.scale' + colorScale + '()'); // outside of data function for export
 
-	d3.json(rasterFile, function(error, data) {
-		if (error) return console.log(error);
+	d3.json(rasterFile).then(function(data) {
 
 		const rasW = data.width; //raster resolution stored in the json file
 		const rasH = data.height; //raster resolution stored in the json file
