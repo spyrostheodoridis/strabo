@@ -94,50 +94,109 @@ function plotGraticule(container, base, step, plotGratLines = false, plotOutline
 }
 
 
-function plotScale(container, base, Lon0, Lat0, dx, earthR = 6371) {
+function plotScale(container, base, [x0, y0], dx, increment = 0.0001, precDiff = 0, greatCircle = false, cssStyle = '') {
 
 	var container = d3.select('#' + container);
 
-	// harvesine formula ==> solve for dλ
-	const NewLon = Lon0 + (dx / earthR) * (180 / Math.PI) / Math.cos(Lat0 * Math.PI / 180 );
-	const sclBarCoord1 = base.projection([Lon0, Lat0]);
-	const sclBarCoord2 = base.projection([NewLon, Lat0]);
+	const R = 6371e3 //earth radius
 
-	if (base.projectionName.includes('Orthographic') || base.projectionName.includes('Stereographic')){
+	p1 = baseProj.projection.invert([x0, y0]);
+	// harvesine formula ==> solve for dλ, along the same lat to start as close as possible to the desired end point
+	const NewLon = p1[0] + (dx / R) * (180 / Math.PI) / Math.cos(p1[1] * Math.PI / 180 );
+	//initial end point in pixels
+	const p2Pix = baseProj.projection([NewLon, p1[1]]);
+	//replace y pixels
+	p2Pix[1] = y0;
+	const p2 = baseProj.projection.invert(p2Pix);
+	//get current distance
+	const Dx = getDistance(p1, p2);
+	//start iterations to get the desired distance
+	let i = 0;
+	//object to store distances
+	distObj = {}
+	while (i < increment*100) {
+		if (Dx < dx){
+			var p3 = baseProj.projection.invert([p2Pix[0] + i,  p2Pix[1]]);
+			var DxTmp = Math.round(getDistance(p1, p3));
+			if (DxTmp === dx) {
+				break
+			}else {
+				distDiff = Math.abs(dx - DxTmp);
+				if (distDiff < precDiff) {
+					break
+				} else{
+					distObj[distDiff] = p3;
+				}
+			}
+
+		}else if (Dx > dx){
+			var p3 = baseProj.projection.invert([p2Pix[0] - i,  p2Pix[1]]);
+			var DxTmp = Math.round(getDistance(p1, p3));
+			if (DxTmp === dx) {
+				break
+			}else {
+				distDiff = Math.abs(dx - DxTmp);
+				if (distDiff < precDiff) {
+					break
+				} else{
+					distObj[distDiff] = p3;
+				}
+			}
+		}
+
+		i += increment
+	
+	}
+	//if the desired point has been found
+	if (Object.keys(distObj).length < 100) {
+		var endPoint = p3;
+		var barWidth = Math.hypot(baseProj.projection(endPoint)[0] - x0, baseProj.projection(endPoint)[1]-y0);
+		var dist = dx;
+	}else {// if the desired points has not been found then print the minimum distance found
+		var endPoint = distObj[d3.min(Object.keys(distObj))];
+		var barWidth = Math.hypot(baseProj.projection(endPoint)[0] - x0, baseProj.projection(endPoint)[1]-y0);
+		var dist = getDistance(p1, endPoint);
+	};
+
+	if (greatCircle === true){
+
 		const path = d3.geoPath()
     		.projection(base.projection);
 
-		arcs = {type: 'LineString', coordinates: [ [Lon0, Lat0], [NewLon, Lat0] ]};
+		arcs = {type: 'LineString', coordinates: [ p1, endPoint]};
 
 		container.append('path')
-			.attr('class', 'scaleBar')
+			.attr('class', cssStyle)
     		.attr('d', path(arcs));  // great arc's path
 
     	const scaleText = container.append('text')
-			.text(dx + 'km')
-			.attr('y', sclBarCoord2[1])
+			.text(dist + 'm')
+			.attr('y', y0)
 			.attr('dy', '1.2em');
 
 		const bboxScaleT = scaleText.node().getBBox();
-		scaleText.attr('x', sclBarCoord1[0] + (sclBarCoord2[0] - sclBarCoord1[0])/2 - bboxScaleT.width/2);
+		scaleText.attr('x', x0 + (baseProj.projection(endPoint)[0] - x0)/2 - bboxScaleT.width/2);
 
-	} else {
 
-		container.append('line')
-			.attr('x1', sclBarCoord1[0])
-			.attr('y1', sclBarCoord1[1])
-			.attr('x2', sclBarCoord2[0])
-			.attr('y2', sclBarCoord2[1])
-			.attr('class', 'scaleBar');
+	}else {
+
+		container.append('rect')
+			.attr('x', x0)
+			.attr('y', y0)
+			.attr('width', barWidth)
+			.attr('height', 1)
+			.attr('class', cssStyle);
 
 		const scaleText = container.append('text')
-			.text(dx + 'km')
-			.attr('y', sclBarCoord2[1])
+			.text(dist + 'm')
+			.attr('y', y0)
 			.attr('dy', '1.2em');
 
 		const bboxScaleT = scaleText.node().getBBox();
-		scaleText.attr('x', sclBarCoord1[0] + (sclBarCoord2[0] - sclBarCoord1[0])/2 - bboxScaleT.width/2);
+		scaleText.attr('x', x0 + (baseProj.projection(endPoint)[0] - x0)/2 - bboxScaleT.width/2);
+
 	}
+	
 }
 
 
@@ -160,7 +219,6 @@ function plotBase(container, base, topoFile, geomName, plotCoast = false, plotLa
 	d3.json(topoFile).then(function (topology) {
 
 		const topoData = topojson.feature(topology, topology.objects[geomName]);
-		console.log(topoData)
 
 		if (plotCountries === true){ container.append('path')
 			.datum(topojson.mesh(topology, topology.objects[geomName], function (a,b) {return a !== b; }))
@@ -780,6 +838,35 @@ function plotColBar(container, x, y, width, height, colScale, nOfSections, text,
 
 };
 
+
+/* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -  */
+/* Latitude/longitude spherical geodesy tools                         (c) Chris Veness 2002-2016  */
+/*                                                                                   MIT Licence  */
+/* www.movable-type.co.uk/scripts/latlong.html                                                    */
+/* www.movable-type.co.uk/scripts/geodesy/docs/module-latlon-spherical.html                       */
+function getDistance(p1,p2) { 
+		    
+	var lat1 = p1[1];
+	var lat2 = p2[1];
+	var lon1 = p1[0];
+	var lon2 = p2[0];
+			
+	var R = 6371e3; // metres
+	var φ1 = lat1* Math.PI / 180;
+	var φ2 = lat2* Math.PI / 180;
+	var Δφ = (lat2-lat1)* Math.PI / 180;
+	var Δλ = (lon2-lon1)* Math.PI / 180;
+
+	var a = Math.sin(Δφ/2) * Math.sin(Δφ/2) +
+            Math.cos(φ1) * Math.cos(φ2) *
+            Math.sin(Δλ/2) * Math.sin(Δλ/2);
+	var c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+
+	var distance = R * c;
+		
+return distance;
+	
+}
 
 
 

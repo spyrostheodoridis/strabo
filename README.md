@@ -239,6 +239,7 @@ ogr2ogr -f GeoJSON -t_srs EPSG:4326 lakes_50m.json ne_50m_lakes/ne_50m_lakes.shp
     stroke: black;
     stroke-width: 0.3;
 }
+
 .vectorFeatures{
     fill-opacity: 0.7;
     fill: blue;
@@ -246,6 +247,12 @@ ogr2ogr -f GeoJSON -t_srs EPSG:4326 lakes_50m.json ne_50m_lakes/ne_50m_lakes.shp
 
 .legendTxt{
     font-size: 14px;
+}
+
+.scaleBar {
+    stroke: black;
+    fill: black;
+    stroke-width: 1px;
 }
 ```
 
@@ -289,7 +296,7 @@ plotGraticule(container = 'gratTxt',
             lonOff = 10,
             latOff = -10);
 
-plotScale('scale', baseProj, 15, 53, 200)
+plotScale('scale', baseProj, [223, 500], 500000, increment = 0.0001, precDiff = 0, greatCircle = false, cssStyle = 'scaleBar')
 
 plotBase(container ='coast',
         base = baseProj, topoFile = 'world_10m.topojson',
@@ -354,6 +361,7 @@ and finally in the html file
     stroke: lightgrey;
     stroke-width: 1;
 }
+
 .lonLatLabels {
     font-size: 14px;
     alignment-baseline: middle;
@@ -361,11 +369,6 @@ and finally in the html file
     fill: black;
 }
 
-.scaleBar {
-    stroke: black;
-    stroke-width: 2px;
-    fill: none;
-}
 .coast {
     fill: none;
     stroke: black;
@@ -374,6 +377,12 @@ and finally in the html file
 
 .legendTxt{
     font-size: 14px;
+}
+
+.scaleBar {
+    stroke: black;
+    fill: black;
+    stroke-width: 1px;
 }
 ```
 
@@ -420,7 +429,8 @@ plotGraticule(container = 'gratTxt',
             latOff = -10);
 
 
-plotScale('scale', baseProj, 20, 35, 100)
+plotScale('scale', baseProj, [150, 500], 50000, increment = 0.0001, precDiff = 0, greatCircle = false, cssStyle = 'scaleBar')
+
 
 plotBase(container ='coast',
         base = baseProj, topoFile = 'world_10m.topojson',
