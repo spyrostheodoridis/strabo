@@ -1,8 +1,6 @@
-# anaximander
+# strabo
 
-Anaximander was one of the first Greek philosophers to work on the fields of what we now call geography and biology.
-
-The anaximander library can be used for creating physical geography oriented maps for the web (or for scientific publications). It takes advantage of the 
+The strabo library can be used for creating physical geography oriented maps for the web (or for scientific publications). It takes advantage of the 
 powerful d3.js visualization library (https://d3js.org/) and the HTML canvas element (https://www.w3schools.com/html/html5_canvas.asp) for efficient handling of big raster data sets.
 It aims at providing researchers with a tool to accurately and effectively visualize spatial information.
 
@@ -22,8 +20,8 @@ Before we start, load the required libraries by including the following headers 
     <script src="https://d3js.org/d3-geo-projection.v2.min.js"></script>
     <script src="https://unpkg.com/topojson@3"></script>
     <script src='https://npmcdn.com/@turf/turf/turf.min.js'></script>
-    <script src="anaximander.js"></script>
-    <title>anaximander</title>
+    <script src="strabo.js"></script>
+    <title>strabo</title>
 </head>
 ```
 
@@ -336,7 +334,7 @@ setTimeout(function() { plotColBar(container = 'colBar',
 ![alt text](examples/exampl3.png?raw=true)
 
 ### Plot rasters
-Raster datasets can be quite heavy for visualization programs to process. Anaximander utilizes the canvas element to make
+Raster datasets can be quite heavy for visualization programs to process. strabo utilizes the canvas element to make
 this task easier for the browsers. In the following example we plot the annual mean temperature (http://chelsa-climate.org/) in Greece. The raster was obtained at
 at 30 arc second (~1 km<sup>2</sup>) resolution. We first need to transform the raster to json format that can used from Javascript. For that, 
 I use a function from the chorospy package (https://github.com/spyrostheodoridis/chorospy). The map is in Transverse Mercator projection rotate by 21 degrees (the central meridian of UTM zone 34).
