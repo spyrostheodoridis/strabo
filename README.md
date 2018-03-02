@@ -73,10 +73,12 @@ svg.append('g').attr('id', 'land')
 svg.append('g').attr('id', 'img')
 
 var baseProj = baseMap(container = 'main',
+                       extentBounds = [[-180, -90], [179.9999, 90]],
                        projection = 'Orthographic',
                        rotate = [-50, -50, 0],
-                       clAngle = 90, 
-                       extentBounds = [[-180, -90], [179.9999, 90]]);
+                       clAngle = 90,
+                       parallel = null
+                       );
 
 plotGraticule(container = 'grat',
               base = baseProj,
@@ -118,6 +120,75 @@ And the two CSS rules
 ```
 
 ![alt text](examples/exampl1.png?raw=true)
+
+The same can be done in an equal area projection. In the following example we use the Behrmann cylindrical equal area projection
+(standard parallels: 30°N, 30°S). The specific projection is defined using the 'parallel' attribute.
+
+```bash
+# again first clip the raster (it's in wgs84) to the desired extent
+#clip
+!gdalwarp -te -180 0 180 90 -t_srs EPSG:4326 worldMarbleNoWater.tif short.tif -overwrite
+#reproject to Behrmann's projection
+!gdalwarp  -wo SOURCE_EXTRA=200 -wo SAMPLE_GRID=YES -t_srs '+proj=cea +lon_0=0 +lat_ts=30 +x_0=0 +y_0=0 +datum=WGS84 +ellps=WGS84 +units=m +no_defs ' short.tif shortBehr.tif -overwrite
+#tiff to png
+!gdal_translate shortBehr.tif world.png -of PNG -outsize 50% 50%
+```
+
+The two things we change here is the definition of the projection and the image center/bounds. We also add the graticule text.
+
+```javascript
+var baseProj = baseMap(container = 'main',
+                        extentBounds = [[-179, -90], [180, 90]],
+                        projection = 'CylindricalEqualArea',
+                        rotate = [0, 0, 0],
+                        clAngle = 0,
+                        parallel = 30
+                        );
+
+plotGraticule(container = 'grat',
+            base = baseProj,
+            step = [20, 20],
+            plotGratLines = true,
+            plotOutline = true,
+            sphereR = 0,
+            plotGratText = false,
+            cssStyle = 'graticuleLines',
+            latTxtLon = 0,
+            lonTxtLat = 0,
+            lonOff = 0,
+            latOff = 0);
+
+plotGraticule(container = 'gratTxt',
+            base = baseProj,
+            step = [20, 20],
+            plotGratLines = false,
+            plotOutline = false,
+            sphereR = 0,
+            plotGratText = true,
+            cssStyle = 'lonLatLabels',
+            latTxtLon = -180,
+            lonTxtLat = -90,
+            lonOff = 10,
+            latOff = -10);
+
+plotBase(container ='land',
+         base = baseProj, topoFile = 'world_10m.topojson',
+         geomName = 'world_10m',
+         plotCoast = false,
+         plotLand = true,
+         plotCountries = false,
+         cssStyle = 'land');
+
+plotImage(container = 'img',
+        base = baseProj,
+        imageFile = 'world.png',
+        imgBounds = [[-179.99999999832752, -0.005734303851737857], [179.99275047022692, 89.99933519984673]],
+        imgCenter = [-0.0036247640502935683, 30.107948494285786],
+        sphere = false)
+```
+
+![alt text](examples/exampl1a.png?raw=true)
+
 
 ### Plot points on images
 We can also plot simple points colored according to their attributes. In this example we combine the same image as above
@@ -167,10 +238,12 @@ gdal_translate shortOrtho.tif world.png -of PNG -outsize 20% 20%
     svg.append('g').attr('id', 'colBarPoint')
 
     var baseProj = baseMap(container = 'main',
+                           extentBounds = [[-180, 0], [179.9999, 90]],
                            projection = 'Orthographic',
                            rotate = [0, -90, 0],
-                           clAngle = 90, 
-                           extentBounds = [[-180, 0], [179.9999, 90]]);
+                           clAngle = 90,
+                           parallel = null
+                           );
     
     plotGraticule(container = 'grat',
                   base = baseProj,
@@ -263,10 +336,12 @@ svg.append('g').attr('id', 'scale')
 svg.append('g').attr('id', 'colBar')
 
 var baseProj = baseMap(container = 'main',
+                        extentBounds = [[0, 50], [40, 70]],
                         projection = 'ConicConformal',
                         rotate = [-20, 0, 0],
                         clAngle = 0, 
-                        extentBounds = [[0, 50], [40, 70]]);
+                        parallel = null
+                        );
     
 plotGraticule(container = 'grat',
             base = baseProj,
@@ -395,10 +470,12 @@ svg.append('g').attr('id', 'colBar')
 
 
 var baseProj = baseMap(container = 'main',
+                        extentBounds = [[19, 34], [28, 45]],
                         projection = 'TransverseMercator',
                         rotate = [-21, 0, 0],
                         clAngle = 0, 
-                        extentBounds = [[19, 34], [28, 45]]);
+                        parallel = null
+                        );
     
 plotGraticule(container = 'grat',
             base = baseProj,

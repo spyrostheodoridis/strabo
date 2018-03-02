@@ -1,5 +1,5 @@
 
-function baseMap (container, projection, rotate, clAngle, extentBounds) {
+function baseMap (container, extentBounds, projection, rotate, clAngle, parallel) {
 
 	const mainPlot = d3.select('#' + container);
 
@@ -18,6 +18,8 @@ function baseMap (container, projection, rotate, clAngle, extentBounds) {
 	const proj = eval('d3.geo' + projection + '()');
 	proj.scale(1).translate([0,0]).precision(0.1)
 		.rotate([rotate[0], rotate[1], rotate[2]]).clipAngle(clAngle);
+
+	if (parallel) {proj.parallel(parallel)};
 
 	const path = d3.geoPath().projection(proj);
 
