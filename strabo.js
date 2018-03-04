@@ -3,16 +3,17 @@ function baseMap (container, extentBounds, projection, rotate, clAngle, parallel
 
 	const mainPlot = d3.select('#' + container);
 
-	const width = mainPlot.node().getAttribute('width');
-	const height = mainPlot.node().getAttribute('height');
-
 	//create template
 	mainPlot.append('rect')
-			.attr('width', width)
-			.attr('height', height)
+			.attr('width', '100%')
+			.attr('height', '100%')
 			.attr('x', 0).attr('y', 0)
 			.style('fill','none')
 			.style('stroke', 'black');
+
+
+	const width = mainPlot.node().getBBox().width;
+	const height = mainPlot.node().getBBox().height;
 
 	//define projection and outline
 	const proj = eval('d3.geo' + projection + '()');
