@@ -1,5 +1,5 @@
 
-function baseMap (container, extentBounds, projection, rotate, clAngle, parallel, frame = true) {
+function baseMap (container, extentBounds, projection, rotate, clAngle, parallel, frame = true, frameFill = 0.9) {
 
 	const mainPlot = d3.select('#' + container);
 
@@ -37,7 +37,7 @@ function baseMap (container, extentBounds, projection, rotate, clAngle, parallel
 
 	d3.select('clipPath').remove() // clear clipPath
 	// redefine scale and translate
-	const s = .9 / Math.max( initBox.width / width, initBox.height / height);
+	const s = frameFill / Math.max( initBox.width / width, initBox.height / height);
 	const t = [ (width - s*(2*initBox.x + initBox.width )) / 2, (height - s*(2*initBox.y + initBox.height )) / 2];
 	proj.scale(s).translate(t);
 	
