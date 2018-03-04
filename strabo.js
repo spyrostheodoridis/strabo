@@ -1,15 +1,15 @@
 
-function baseMap (container, extentBounds, projection, rotate, clAngle, parallel) {
+function baseMap (container, extentBounds, projection, rotate, clAngle, parallel, frame = true) {
 
 	const mainPlot = d3.select('#' + container);
 
-	//create template
+	//create frame
 	mainPlot.append('rect')
 			.attr('width', '100%')
 			.attr('height', '100%')
 			.attr('x', 0).attr('y', 0)
 			.style('fill','none')
-			.style('stroke', 'black');
+			.style('stroke', (frame===true) ? 'black': 'none');
 
 
 	const width = mainPlot.node().getBBox().width;
