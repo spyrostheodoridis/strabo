@@ -729,7 +729,7 @@ function plotColBar(container, x, y, width, height, colScale, nOfSections, text,
 	var container = d3.select('#' + container);
 	const leg = container.append('g').attr('id', 'bar');
 
-	// the bar is initially varructed horizontally then rotated
+	// the bar is initially constructed horizontally then rotated
 	const nWidth = (horizontal) ? width : height;
 	const nHeight = (horizontal) ? height : width;
 
