@@ -162,8 +162,6 @@ function plotScale(container, base, [x0, y0], dx, increment = 0.0001, precDiff =
 		var dist = getDistance(p1, endPoint);
 	};
 
-	console.log(barWidth)
-
 	if (greatCircle === true){
 
 		const path = d3.geoPath()
