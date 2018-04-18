@@ -97,11 +97,12 @@ function plotGraticule(container, base, step, plotGratLines = false, plotOutline
 }
 
 
-function plotScale(container, base, [x0, y0], dx, increment = 0.0001, precDiff = 0, greatCircle = false, cssStyle = '') {
+function plotScale(container, base, [x0, y0], dx, unit = 'km', increment = 0.0001, precDiff = 0, greatCircle = false, cssStyle = '') {
 
 	var container = d3.select('#' + container);
 
-	const R = 6371e3 //earth radius
+	var R = (unit === 'km') ? 6371 : 6371e3 //earth radius
+
 
 	p1 = [x0, y0];
 	p1Pix = baseProj.projection(p1)
@@ -192,7 +193,7 @@ function plotScale(container, base, [x0, y0], dx, increment = 0.0001, precDiff =
 			.attr('class', cssStyle);
 
 		const scaleText = container.append('text')
-			.text(dist + 'm')
+			.text((unit === 'km') ? dist + 'km' : dist + 'm')
 			.attr('y', p1Pix[1])
 			.attr('dy', '1.2em');
 
