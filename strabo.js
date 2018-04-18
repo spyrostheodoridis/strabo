@@ -114,7 +114,7 @@ function plotScale(container, base, [x0, y0], dx, unit = 'km', increment = 0.000
 	p2Pix[1] = p1Pix[1];
 	const p2 = baseProj.projection.invert(p2Pix);
 	//get current distance
-	const Dx = getDistance(p1, p2);
+	const Dx = getDistance(p1, p2, unit);
 	//start iterations to get the desired distance
 	let i = 0;
 	//object to store distances
@@ -122,7 +122,7 @@ function plotScale(container, base, [x0, y0], dx, unit = 'km', increment = 0.000
 	while (i < increment*100) {
 		if (Dx < dx){
 			var p3 = baseProj.projection.invert([p2Pix[0] + i,  p2Pix[1]]);
-			var DxTmp = Math.round(getDistance(p1, p3));
+			var DxTmp = Math.round(getDistance(p1, p3, unit));
 			if (DxTmp === dx) {
 				break
 			}else {
@@ -136,7 +136,7 @@ function plotScale(container, base, [x0, y0], dx, unit = 'km', increment = 0.000
 
 		}else if (Dx > dx){
 			var p3 = baseProj.projection.invert([p2Pix[0] - i,  p2Pix[1]]);
-			var DxTmp = Math.round(getDistance(p1, p3));
+			var DxTmp = Math.round(getDistance(p1, p3, unit));
 			if (DxTmp === dx) {
 				break
 			}else {
@@ -160,7 +160,7 @@ function plotScale(container, base, [x0, y0], dx, unit = 'km', increment = 0.000
 	}else {// if the desired points has not been found then print the minimum distance found
 		var endPoint = distObj[d3.min(Object.keys(distObj))];
 		var barWidth = Math.hypot(baseProj.projection(endPoint)[0] - p1Pix[0], baseProj.projection(endPoint)[1]-p1Pix[1]);
-		var dist = getDistance(p1, endPoint);
+		var dist = getDistance(p1, endPoint, unit);
 	};
 
 	if (greatCircle === true){
@@ -849,14 +849,14 @@ function plotColBar(container, x, y, width, height, colScale, nOfSections, text,
 /*                                                                                   MIT Licence  */
 /* www.movable-type.co.uk/scripts/latlong.html                                                    */
 /* www.movable-type.co.uk/scripts/geodesy/docs/module-latlon-spherical.html                       */
-function getDistance(p1,p2) { 
+function getDistance(p1,p2, unit) { 
 		    
 	var lat1 = p1[1];
 	var lat2 = p2[1];
 	var lon1 = p1[0];
 	var lon2 = p2[0];
 			
-	var R = 6371e3; // metres
+	var R = (unit === 'km') ? 6371 : 6371e3; 
 	var φ1 = lat1* Math.PI / 180;
 	var φ2 = lat2* Math.PI / 180;
 	var Δφ = (lat2-lat1)* Math.PI / 180;
