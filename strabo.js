@@ -103,13 +103,14 @@ function plotScale(container, base, [x0, y0], dx, increment = 0.0001, precDiff =
 
 	const R = 6371e3 //earth radius
 
-	p1 = baseProj.projection([x0, y0]);
+	p1 = [x0, y0];
+	p1Pix = baseProj.projection(p1)
 	// harvesine formula ==> solve for dλ, along the same lat to start as close as possible to the desired end point
 	const NewLon = p1[0] + (dx / R) * (180 / Math.PI) / Math.cos(p1[1] * Math.PI / 180 );
 	//initial end point in pixels
 	const p2Pix = baseProj.projection([NewLon, p1[1]]);
 	//replace y pixels
-	p2Pix[1] = p1[1];
+	p2Pix[1] = p1Pix[1];
 	const p2 = baseProj.projection.invert(p2Pix);
 	//get current distance
 	const Dx = getDistance(p1, p2);
@@ -153,11 +154,11 @@ function plotScale(container, base, [x0, y0], dx, increment = 0.0001, precDiff =
 	//if the desired point has been found
 	if (Object.keys(distObj).length < 100) {
 		var endPoint = p3;
-		var barWidth = Math.hypot(baseProj.projection(endPoint)[0] - p1[0], baseProj.projection(endPoint)[1]-p1[1]);
+		var barWidth = Math.hypot(baseProj.projection(endPoint)[0] - p1Pix[0], baseProj.projection(endPoint)[1]-p1Pix[1]);
 		var dist = dx;
 	}else {// if the desired points has not been found then print the minimum distance found
 		var endPoint = distObj[d3.min(Object.keys(distObj))];
-		var barWidth = Math.hypot(baseProj.projection(endPoint)[0] - p1[0], baseProj.projection(endPoint)[1]-p1[1]);
+		var barWidth = Math.hypot(baseProj.projection(endPoint)[0] - p1Pix[0], baseProj.projection(endPoint)[1]-p1Pix[1]);
 		var dist = getDistance(p1, endPoint);
 	};
 
@@ -174,29 +175,29 @@ function plotScale(container, base, [x0, y0], dx, increment = 0.0001, precDiff =
 
     	const scaleText = container.append('text')
 			.text(dist + 'm')
-			.attr('y', p1[1])
+			.attr('y', p1Pix[1])
 			.attr('dy', '1.2em');
 
 		const bboxScaleT = scaleText.node().getBBox();
-		scaleText.attr('x', p1[0] + (baseProj.projection(endPoint)[0] - p1[0])/2 - bboxScaleT.width/2);
+		scaleText.attr('x', p1Pix[0] + (baseProj.projection(endPoint)[0] - p1Pix[0])/2 - bboxScaleT.width/2);
 
 
 	}else {
 
 		container.append('rect')
-			.attr('x', p1[0])
-			.attr('y', p1[1])
+			.attr('x', p1Pix[0])
+			.attr('y', p1Pix[1])
 			.attr('width', barWidth)
 			.attr('height', 1)
 			.attr('class', cssStyle);
 
 		const scaleText = container.append('text')
 			.text(dist + 'm')
-			.attr('y', p1[1])
+			.attr('y', p1Pix[1])
 			.attr('dy', '1.2em');
 
 		const bboxScaleT = scaleText.node().getBBox();
-		scaleText.attr('x', p1[0] + (baseProj.projection(endPoint)[0] - p1[0])/2 - bboxScaleT.width/2);
+		scaleText.attr('x', p1Pix[0] + (baseProj.projection(endPoint)[0] - p1Pix[0])/2 - bboxScaleT.width/2);
 
 	}
 	
