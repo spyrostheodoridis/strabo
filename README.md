@@ -369,7 +369,7 @@ plotGraticule(container = 'gratTxt',
             lonOff = 10,
             latOff = -10);
 
-plotScale('scale', baseProj, [223, 500], 500000, increment = 0.0001, precDiff = 0, greatCircle = false, cssStyle = 'scaleBar')
+plotScale('scale', baseProj, [14, 52], 500, unit = 'km', increment = 0.0001, precDiff = 10, greatCircle = false, cssStyle = 'scaleBar')
 
 plotBase(container ='coast',
         base = baseProj, topoFile = 'world_10m.topojson',
@@ -412,7 +412,7 @@ setTimeout(function() { plotColBar(container = 'colBar',
 Raster datasets can be quite heavy for visualization programs to process. strabo utilizes the canvas element to make
 this task easier for the browsers. In the following example we plot the annual mean temperature (http://chelsa-climate.org/) in Greece. The raster was obtained at
 at 30 arc second (~1 km<sup>2</sup>) resolution. We first need to transform the raster to json format that can used from Javascript. For that, 
-I use a function from the chorospy package (https://github.com/spyrostheodoridis/chorospy). The map is in Transverse Mercator projection rotate by 21 degrees (the central meridian of UTM zone 34).
+I use a function from the chorospy package (https://github.com/spyrostheodoridis/chorospy). The map is in Transverse Mercator projection rotated by 21 degrees (the central meridian of UTM zone 34).
 
 ```bash
 # first clip the raster (use wgs84 coordoinates) to the desired extent
@@ -504,7 +504,7 @@ plotGraticule(container = 'gratTxt',
             latOff = -10);
 
 
-plotScale('scale', baseProj, [150, 500], 50000, increment = 0.0001, precDiff = 0, greatCircle = false, cssStyle = 'scaleBar')
+plotScale('scale', baseProj, [20, 35], 200, unit = 'km', increment = 0.0001, precDiff = 10, greatCircle = false, cssStyle = 'scaleBar')
 
 
 plotBase(container ='coast',
@@ -522,20 +522,20 @@ var colSclImg = plotRaster(container = 'canvas',
                                excludeValues = [], 
                                colorScale = 'Linear', 
                                colorRange = ['blue', 'red'], 
-                               rScale = 10, 
+                               rScale = 5, 
                                sphere = false);
     
 
 setTimeout(function() { plotColBar(container = 'colBar',
-                                   x = 350, y = 70,
-                                   width = 130, height = 20, 
-                                   colScale = colSclImg, 
-                                   nOfSections = 150, 
-                                   text = true, 
-                                   barTextDigits = 1, 
-                                   barTitle = 'Annual Mean Temperature (C°)', 
-                                   horizontal = true,
-                                   cssStyle = 'legendTxt'); }, 5000);
+                               x = 220, y = 400,
+                               width = 130, height = 20, 
+                               colScale = colSclImg, 
+                               nOfSections = 150, 
+                               text = true, 
+                               barTextDigits = 1, 
+                               barTitle = 'Annual Mean Temperature (C°)', 
+                               horizontal = true,
+                               cssStyle = 'legendTxt'); }, 5000);
 ```
 
 ![alt text](examples/exampl4.png?raw=true)
