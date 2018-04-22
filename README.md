@@ -411,7 +411,7 @@ setTimeout(function() { plotColBar(container = 'colBar',
 ### Plot rasters
 Raster datasets can be quite heavy for visualization programs to process. strabo utilizes the canvas element to make
 this task easier for the browsers. In the following example we plot the annual mean temperature (http://chelsa-climate.org/) in Greece. The raster was obtained at
-at 30 arc second (~1 km<sup>2</sup>) resolution. We first need to transform the raster to json format that can used from Javascript. For that, 
+30 arc second (~1 km<sup>2</sup>) resolution. We first need to transform the tif file to json format that Javascript can read. For that, 
 I use a function from the chorospy package (https://github.com/spyrostheodoridis/chorospy). The map is in Transverse Mercator projection rotated by 21 degrees (the central meridian of UTM zone 34).
 
 ```bash
