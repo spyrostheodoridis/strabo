@@ -605,7 +605,7 @@ function plotRaster(container, base, rasterFile, dataScale, excludeValues = [], 
 		imgDataSet.forEach(v => imgData.push(v));
 		//define color scale
 		if (colorScale === 'Linear'){
-			const cDomain = (colorDomain.length() == 0) ? d3.extent(imgData) : colorDomain;
+			const cDomain = (colorDomain.length == 0) ? d3.extent(imgData) : colorDomain;
 			colScl.interpolate(d3.interpolateHslLong)
 				.domain(cDomain).range(colorRange)
 		}
