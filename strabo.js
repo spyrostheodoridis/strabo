@@ -516,7 +516,7 @@ function plotVector(container, base, vectorFile, vctFormat, geomName, vctPropert
 }
 
 
-function plotRaster(container, base, rasterFile, dataScale, excludeValues = [], colorScale, colDomain = [], colorRange, rScale = 150, sphere = false){
+function plotRaster(container, base, rasterFile, dataScale, excludeValues = [], colorScale, colorRange, rScale = 150, sphere = false){
 
 	const clipID = container + 'Clip'
 
@@ -605,17 +605,12 @@ function plotRaster(container, base, rasterFile, dataScale, excludeValues = [], 
 		imgDataSet.forEach(v => imgData.push(v));
 		//define color scale
 		if (colorScale === 'Linear'){
-			const colDomain = d3.extent(imgData);
 			colScl.interpolate(d3.interpolateHslLong)
-				.domain(colDomain).range(colorRange)
+				.domain(d3.extent(imgData)).range(colorRange)
 		}
 		else if (colorScale === 'Ordinal'){
-			const colDomain = imgData.sort(d3.ascending);
-			colScl.domain(colDomain).range(colorRange)
-		}
-		else if (colorScale === 'Threshold'){
-			colScl.domain(colDomain).range(colorRange)
-		};
+			colScl.domain(imgData.sort(d3.ascending)).range(colorRange)
+		};zz
 
 		imgDataSet = null;
 		imgData = null;
@@ -798,7 +793,7 @@ function plotColBar(container, x, y, width, height, colScale, nOfSections, text,
 		}
 	};
 
-	if (colScale.type === 'Ordinal' || colScale.type === 'Threshold') {
+	if (colScale.type === 'Ordinal') {
 		// set number of sections 
 		nOfSections = colScale.domain().length;
 
