@@ -612,8 +612,7 @@ function plotRaster(container, base, rasterFile, dataScale, excludeValues = [], 
 		else if (colorScale === 'Ordinal'){
 			const colDomain = imgData.sort(d3.ascending);
 			colScl.domain(colDomain).range(colorRange)
-		};
-
+		}
 		else if (colorScale === 'Threshold'){
 			colScl.domain(colDomain).range(colorRange)
 		};
