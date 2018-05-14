@@ -516,7 +516,7 @@ function plotVector(container, base, vectorFile, vctFormat, geomName, vctPropert
 }
 
 
-function plotRaster(container, base, rasterFile, dataScale, excludeValues = [], colorScale, colorRange, rScale = 150, sphere = false){
+function plotRaster(container, base, rasterFile, dataScale, excludeValues = [], colorScale, colorDomain = [], colorRange, rScale = 150, sphere = false){
 
 	const clipID = container + 'Clip'
 
@@ -605,12 +605,13 @@ function plotRaster(container, base, rasterFile, dataScale, excludeValues = [], 
 		imgDataSet.forEach(v => imgData.push(v));
 		//define color scale
 		if (colorScale === 'Linear'){
+			const cDomain = (colorDomain.length() == 0) ? d3.extent(imgData) : colorDomain;
 			colScl.interpolate(d3.interpolateHslLong)
-				.domain(d3.extent(imgData)).range(colorRange)
+				.domain(cDomain).range(colorRange)
 		}
 		else if (colorScale === 'Ordinal'){
 			colScl.domain(imgData.sort(d3.ascending)).range(colorRange)
-		};zz
+		};
 
 		imgDataSet = null;
 		imgData = null;
