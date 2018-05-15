@@ -80,22 +80,15 @@ var baseProj = baseMap(container = 'main',
                        parallel = null
                        );
 
-plotGraticule(container = 'grat',
-              base = baseProj,
-              step = [20, 20],
-              plotGratLines = true,
-              plotOutline = true,
-              sphereR = 0,
-              plotGratText = false,
-              cssStyle = 'graticuleLines');
+plotGraticule(baseProj, plotGratLines = true, containerLines = 'grat', stepLines = [20, 20], cssLines = 'graticuleLines',
+                    plotOutline = true, containerOut = 'grat', sphereR = 0, cssOut = 'graticuleLines',
+                    plotGratText = false
+                    );
 
-plotBase(container ='land',
-         base = baseProj, topoFile = 'world_10m.topojson',
-         geomName = 'world_10m',
-         plotCoast = false,
-         plotLand = true,
-         plotCountries = false,
-         cssStyle = 'land');
+plotBase(baseProj, topoFile = 'world_50m.topojson', geomName = 'world_50m',
+            plotCoast = false,
+            plotLand = true, containerLand = 'land', cssLand = 'land'
+            );
 
 plotImage(container = 'img',
           base = baseProj,
@@ -145,39 +138,15 @@ var baseProj = baseMap(container = 'main',
                         parallel = 30
                         );
 
-plotGraticule(container = 'grat',
-            base = baseProj,
-            step = [20, 20],
-            plotGratLines = true,
-            plotOutline = true,
-            sphereR = 0,
-            plotGratText = false,
-            cssStyle = 'graticuleLines',
-            latTxtLon = 0,
-            lonTxtLat = 0,
-            lonOff = 0,
-            latOff = 0);
+plotGraticule(baseProj, plotGratLines = true, containerLines = 'grat', stepLines = [20, 20], cssLines = 'graticuleLines',
+                    plotOutline = true, containerOut = 'grat', sphereR = 0, cssOut = 'graticuleLines',
+                    plotGratText = true, containerTxt = 'gratTxt', stepTxt = [20,20], cssTxt = 'lonLatLabels', latTxtLon = -180, lonTxtLat = -90, lonOff = 10, latOff = -15
+                    );
 
-plotGraticule(container = 'gratTxt',
-            base = baseProj,
-            step = [20, 20],
-            plotGratLines = false,
-            plotOutline = false,
-            sphereR = 0,
-            plotGratText = true,
-            cssStyle = 'lonLatLabels',
-            latTxtLon = -180,
-            lonTxtLat = -90,
-            lonOff = 10,
-            latOff = -10);
-
-plotBase(container ='land',
-         base = baseProj, topoFile = 'world_10m.topojson',
-         geomName = 'world_10m',
-         plotCoast = false,
-         plotLand = true,
-         plotCountries = false,
-         cssStyle = 'land');
+plotBase(baseProj, topoFile = 'world_50m.topojson', geomName = 'world_50m',
+            plotCoast = false,
+            plotLand = true, containerLand = 'land', cssLand = 'land'
+            );
 
 plotImage(container = 'img',
         base = baseProj,
@@ -245,26 +214,15 @@ gdal_translate shortOrtho.tif world.png -of PNG -outsize 20% 20%
                            parallel = null
                            );
     
-    plotGraticule(container = 'grat',
-                  base = baseProj,
-                  step = [20, 20],
-                  plotGratLines = true,
-                  plotOutline = false,
-                  sphereR = 90,
-                  plotGratText = false,
-                  cssStyle = 'graticuleLines',
-                  latTxtLon = 0,
-                  lonTxtLat = 0,
-                  lonOff = 0,
-                  latOff = 0);
+    plotGraticule(baseProj, plotGratLines = true, containerLines = 'grat', stepLines = [20, 20], cssLines = 'graticuleLines',
+                    plotOutline = true, containerOut = 'grat', sphereR = 90, cssOut = 'graticuleLines',
+                    plotGratText = false
+                    );
 
-    plotBase(container ='coast',
-            base = baseProj, topoFile = 'world_10m.topojson',
-            geomName = 'world_10m',
-            plotCoast = true,
-            plotLand = false,
-            plotCountries = false,
-            cssStyle = 'coast');
+    plotBase(baseProj, topoFile = 'world_50m.topojson', geomName = 'world_50m',
+            plotCoast = True, containerCoast= 'coast', cssCoast = 'coast',
+            plotLand = false
+            );
 
     plotImage(container = 'img',
               base = baseProj,
@@ -343,41 +301,18 @@ var baseProj = baseMap(container = 'main',
                         parallel = null
                         );
     
-plotGraticule(container = 'grat',
-            base = baseProj,
-            step = [5, 5],
-            plotGratLines = true,
-            plotOutline = true,
-            sphereR = 0,
-            plotGratText = false,
-            cssStyle = 'graticuleLines',
-            latTxtLon = 0,
-            lonTxtLat = 0,
-            lonOff = 0,
-            latOff = 0);
+plotGraticule(baseProj, plotGratLines = true, containerLines = 'grat', stepLines = [5, 5], cssLines = 'graticuleLines',
+                    plotOutline = true, containerOut = 'grat', sphereR = 0, cssOut = 'graticuleLines',
+                    plotGratText = true, containerTxt = 'gratTxt', stepTxt = [5,5], cssTxt = 'lonLatLabels', latTxtLon = 0, lonTxtLat = 50, lonOff = 10, latOff = -10
+                    );
 
-plotGraticule(container = 'gratTxt',
-            base = baseProj,
-            step = [5, 5],
-            plotGratLines = false,
-            plotOutline = false,
-            sphereR = 0,
-            plotGratText = true,
-            cssStyle = 'lonLatLabels',
-            latTxtLon = 0,
-            lonTxtLat = 50,
-            lonOff = 10,
-            latOff = -10);
 
 plotScale('scale', baseProj, [14, 52], 500, unit = 'km', increment = 0.0001, precDiff = 10, greatCircle = false, cssStyle = 'scaleBar')
 
-plotBase(container ='coast',
-        base = baseProj, topoFile = 'world_10m.topojson',
-        geomName = 'world_10m',
-        plotCoast = true,
-        plotLand = false,
-        plotCountries = false,
-        cssStyle = 'coast');
+plotBase(baseProj, topoFile = 'world_50m.topojson', geomName = 'world_50m',
+            plotCoast = True, containerCoast= 'coast', cssCoast = 'coast',
+            plotLand = false
+            );
 
 var colSclVector = plotVector(container = 'vector', 
                                   base = baseProj, 
@@ -477,43 +412,17 @@ var baseProj = baseMap(container = 'main',
                         parallel = null
                         );
     
-plotGraticule(container = 'grat',
-            base = baseProj,
-            step = [5, 5],
-            plotGratLines = true,
-            plotOutline = true,
-            sphereR = 0,
-            plotGratText = false,
-            cssStyle = 'graticuleLines',
-            latTxtLon = 0,
-            lonTxtLat = 0,
-            lonOff = 0,
-            latOff = 0);
-
-plotGraticule(container = 'gratTxt',
-            base = baseProj,
-            step = [5, 5],
-            plotGratLines = false,
-            plotOutline = false,
-            sphereR = 0,
-            plotGratText = true,
-            cssStyle = 'lonLatLabels',
-            latTxtLon = 19,
-            lonTxtLat = 45,
-            lonOff = -10,
-            latOff = -10);
-
-
+plotGraticule(baseProj, plotGratLines = true, containerLines = 'grat', stepLines = [5, 5], cssLines = 'graticuleLines',
+                    plotOutline = true, containerOut = 'grat', sphereR = 0, cssOut = 'graticuleLines',
+                    plotGratText = true, containerTxt = 'gratTxt', stepTxt = [5,5], cssTxt = 'lonLatLabels', latTxtLon = 19, lonTxtLat = 45, lonOff = -10, latOff = -10
+                    );
+s
 plotScale('scale', baseProj, [20, 35], 200, unit = 'km', increment = 0.0001, precDiff = 10, greatCircle = false, cssStyle = 'scaleBar')
 
-
-plotBase(container ='coast',
-        base = baseProj, topoFile = 'world_10m.topojson',
-        geomName = 'world_10m',
-        plotCoast = true,
-        plotLand = false,
-        plotCountries = false,
-        cssStyle = 'coast');
+plotBase(baseProj, topoFile = 'world_50m.topojson', geomName = 'world_50m',
+            plotCoast = True, containerCoast= 'coast', cssCoast = 'coast',
+            plotLand = false
+            );
 
 var colSclImg = plotRaster(container = 'canvas', 
                                base = baseProj, 

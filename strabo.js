@@ -72,7 +72,7 @@ function plotGraticule(base, plotGratLines = false, containerLines = '', stepLin
 			.attr('d', path);
 	};
 
-    if (sphereR){
+    if (plotOutline === true && sphereR){
         const pc = [base.projection.center()[0] - base.projection.rotate()[0], base.projection.center()[1] - base.projection.rotate()[1]]
         d3.select('#' + containerOut).append('path')
         .attr('d', path(d3.geoCircle().center(pc).radius(sphereR).precision(0.5)()))
