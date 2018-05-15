@@ -51,36 +51,39 @@ function baseMap (container, extentBounds, projection, rotate, clAngle, parallel
 }
 
 
-function plotGraticule(container, base, step, plotGratLines = false, plotOutline = false, sphereR = 0, plotGratText = false, cssStyle = '', latTxtLon, lonTxtLat, lonOff = 0, latOff = 0) {
+function plotGraticule(base, plotGratLines = false, containerLines = '', stepLines = [], cssLines = '', 
+							plotOutline = false, containerOut = '', sphereR = 0, cssOut = '',
+							plotGratText = false, containerTxt = '', stepTxt = [], cssTxt = '', latTxtLon, lonTxtLat, lonOff = 0, latOff = 0) {
 
-	var container = d3.select('#' + container);
-
-	const path = d3.geoPath().projection(base.projection);
-
-	base.graticule.step(step)
+	let path = d3.geoPath().projection(base.projection);
 
 	if (plotGratLines === true) {
-		container.append('path').datum(base.graticule).attr('class', cssStyle).attr('d', path);
+
+		let stepLINES = base.graticule.step(stepLines);
+
+		d3.select('#' + containerLines).append('path').datum(base.graticule).attr('class', cssLines).attr('d', path);
 	}
 
-	if (plotOutline === true) {
+	if (plotOutline === true && !sphereR) {
 
-		container.append('path')
+		d3.select('#' + containerOut).append('path')
 			.datum(base.graticule.outline)
-			.attr('class', cssStyle)
+			.attr('class', cssOut)
 			.attr('d', path);
 	};
 
     if (sphereR){
         const pc = [base.projection.center()[0] - base.projection.rotate()[0], base.projection.center()[1] - base.projection.rotate()[1]]
-        container.append('path')
+        d3.select('#' + containerOut).append('path')
         .attr('d', path(d3.geoCircle().center(pc).radius(sphereR).precision(0.5)()))
-            .attr('class', cssStyle);
+            .attr('class', cssOut);
     };
 
 	if (plotGratText === true) {
 
-		container.selectAll('text')
+		let stepTXT = base.graticule.step(stepTxt);
+
+		d3.select('#' + containerTxt).selectAll('text')
 			.data(base.graticule.lines())
   		  .enter().append('text')
 			.each(function(d){
@@ -91,7 +94,7 @@ function plotGraticule(container, base, step, plotGratLines = false, plotOutline
 					.attr('x', lon === true ? base.projection([lineX, lonTxtLat])[0] : base.projection([latTxtLon, lineY])[0] + latOff )
 					.attr('y', lon === true ? base.projection([lineX, lonTxtLat])[1] + lonOff: base.projection([latTxtLon, lineY])[1] )
 					.text(lon === true ? d.coordinates[0][0] : d.coordinates[0][1] )
-					.attr('class', cssStyle)
+					.attr('class', cssTxt)
 			});
 	};
 }
@@ -99,10 +102,9 @@ function plotGraticule(container, base, step, plotGratLines = false, plotOutline
 
 function plotScale(container, base, [x0, y0], dx, unit = 'km', increment = 0.0001, precDiff = 0, greatCircle = false, cssStyle = '') {
 
-	var container = d3.select('#' + container);
+	let cont = d3.select('#' + container);
 
-	var R = (unit === 'km') ? 6371 : 6371e3 //earth radius
-
+	const R = (unit === 'km') ? 6371 : 6371e3 //earth radius
 
 	p1 = [x0, y0];
 	p1Pix = baseProj.projection(p1)
@@ -165,12 +167,12 @@ function plotScale(container, base, [x0, y0], dx, unit = 'km', increment = 0.000
 
 	if (greatCircle === true){
 
-		const path = d3.geoPath()
+		let path = d3.geoPath()
     		.projection(base.projection);
 
 		arcs = {type: 'LineString', coordinates: [ p1, endPoint]};
 
-		container.append('path')
+		cont.append('path')
 			.attr('class', cssStyle)
     		.attr('d', path(arcs));  // great arc's path
 
@@ -185,7 +187,7 @@ function plotScale(container, base, [x0, y0], dx, unit = 'km', increment = 0.000
 
 	}else {
 
-		container.append('rect')
+		cont.append('rect')
 			.attr('x', p1Pix[0])
 			.attr('y', p1Pix[1])
 			.attr('width', barWidth)
@@ -204,17 +206,20 @@ function plotScale(container, base, [x0, y0], dx, unit = 'km', increment = 0.000
 	
 }
 
+function plotBase(base, topoFile, geomName,
+				plotCoast = false, containerCoast= '', cssCoast = '',
+				plotLand = false, containerLand = '', cssLand = '',
+				plotCountries = false, containerCountries = '', cssCountries = '') {
 
-function plotBase(container, base, topoFile, geomName, plotCoast = false, plotLand = false, plotCountries = false, cssStyle = '') {
 
-	const path = d3.geoPath().projection(base.projection);
+	let path = d3.geoPath().projection(base.projection);
 
-	const clipID = container + 'Clip'
+	const clipID = 'baseClip'
 
-	var container = d3.select('#' + container);
+	let clipCont = d3.select('#' + containerLand) || d3.select('#' + containerCoast) || d3.select('#' + containerCountries);
 
 	// make new clip path from graticule.outline 
-	const clPath = container.append('clipPath')
+	const clPath = clipCont.append('clipPath')
 		.attr('id', clipID)
 		.append('path')
 		.attr('id', clipID + 'Path')
@@ -225,25 +230,28 @@ function plotBase(container, base, topoFile, geomName, plotCoast = false, plotLa
 
 		const topoData = topojson.feature(topology, topology.objects[geomName]);
 
-		if (plotCountries === true){ container.append('path')
-			.datum(topojson.mesh(topology, topology.objects[geomName], function (a,b) {return a !== b; }))
-			.attr('d', path)
-			.attr('clip-path', 'url(#' + clipID + ')')
-			.attr('class', cssStyle);
+		if (plotCountries === true){ 
+			d3.select('#' + containerCountries).append('path')
+				.datum(topojson.mesh(topology, topology.objects[geomName], function (a,b) {return a !== b; }))
+				.attr('d', path)
+				.attr('clip-path', 'url(#' + clipID + ')')
+				.attr('class', cssCountries);
 		}
 
-		if (plotCoast === true){ container.append('path')
-			.datum(topojson.mesh(topology, topology.objects[geomName], function (a,b) {return a === b; }))
-			.attr('d', path)
-			.attr('clip-path', 'url(#' + clipID + ')')
-			.attr('class', cssStyle);
+		if (plotCoast === true){
+			d3.select('#' + containerCoast).append('path')
+				.datum(topojson.mesh(topology, topology.objects[geomName], function (a,b) {return a === b; }))
+				.attr('d', path)
+				.attr('clip-path', 'url(#' + clipID + ')')
+				.attr('class', cssCoast);
 		}
 
-		if (plotLand === true){ container.append('path')
-			.datum(topoData)
-			.attr('d', path)
-			.attr('clip-path', 'url(#' + clipID + ')')
-			.attr('class', cssStyle); 
+		if (plotLand === true){
+			d3.select('#' + containerLand).append('path')
+				.datum(topoData)
+				.attr('d', path)
+				.attr('clip-path', 'url(#' + clipID + ')')
+				.attr('class', cssLand);
 		}
 	});
 }
@@ -603,9 +611,16 @@ function plotRaster(container, base, rasterFile, dataScale, excludeValues = [], 
 		// set to array
 		var imgData = [];
 		imgDataSet.forEach(v => imgData.push(v));
+
 		//define color scale
 		if (colorScale === 'Linear'){
-			const cDomain = (colorDomain.length == 0) ? d3.extent(imgData) : colorDomain;
+			if (colorDomain.length != 0){
+				var cDomain = colorDomain;
+				cDomain.unshift(d3.extent(imgData)[0]);
+				cDomain.push(d3.extent(imgData)[1]);
+			}else{
+				var cDomain =  d3.extent(imgData);
+			};
 			colScl.interpolate(d3.interpolateHslLong)
 				.domain(cDomain).range(colorRange)
 		}
