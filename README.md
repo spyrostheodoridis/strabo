@@ -15,12 +15,12 @@ Before we start, load the required libraries by including the following headers 
 <!DOCTYPE html>
 
 <head>
-    <meta charset="utf-8"/>
-    <script src="https://d3js.org/d3.v5.js"></script>
-    <script src="https://d3js.org/d3-geo-projection.v2.min.js"></script>
-    <script src="https://unpkg.com/topojson@3"></script>
+    <meta charset='utf-8'/>
+    <script src='https://d3js.org/d3.v5.js'></script>
+    <script src='https://d3js.org/d3-geo-projection.v2.min.js'></script>
+    <script src='https://unpkg.com/topojson@3'></script>
     <script src='https://npmcdn.com/@turf/turf/turf.min.js'></script>
-    <script src="strabo.js"></script>
+    <script src='strabo.js'></script>
     <title>strabo</title>
 </head>
 ```
@@ -39,7 +39,7 @@ geo2topo world_10m.json > world_10m.topojson -q 1000000
 Notes:
 1. For topo / geojson files use the standard EPSG:4326 projection to make sure that all coordinates are in WGS84 datum. D3 will take care of the reprojection  
 2. The world topojson file can be directly downloaded from this repository  
-3. Depending on the projection, you may need to open world_10m.topojson file with a text editor, go at the end of the file, and change "translate":[-179.999999,-90] to "translate":[-179.999999,-89.99999]  
+3. Depending on the projection, you may need to open world_10m.topojson file with a text editor, go at the end of the file, and change 'translate':[-179.999999,-90] to 'translate':[-179.999999,-89.99999]  
 
 Then prepare the image. I am using the gdal library for all transformations. 
 
@@ -62,10 +62,10 @@ Now in javascript:
 
 ```javascript
 //define the main container
-var svg = d3.select("body").append("svg")
-    .attr("width", '600')
-    .attr("height", '600')
-    .attr("id", "main");
+var svg = d3.select('body').append('svg')
+    .attr('width', '600')
+    .attr('height', '600')
+    .attr('id', 'main');
 
 //define the order of layers
 svg.append('g').attr('id', 'grat')
@@ -93,7 +93,7 @@ plotImage({container: 'img',
           imgBounds: [[0.893981647301399, 7.176719648101456], [153.31851899031952, 33.24681014801683]],
           imgCenter: [53.28405275947736, 56.18783605229462],
           sphere: false
-        })
+        });
 ```
 
 and the css rules
@@ -133,16 +133,16 @@ The two things we change here is the definition of the projection and the image 
 
 ```javascript
 //define the main container
-var svg = d3.select("body").append("svg")
-    .attr("width", '800')
-    .attr("height", '600')
-    .attr("id", "main");
+var svg = d3.select('body').append('svg')
+    .attr('width', '800')
+    .attr('height', '600')
+    .attr('id', 'main');
 
 //define the order of layers
-svg.append('g').attr('id', 'grat')
-svg.append('g').attr('id', 'gratTxt')
-svg.append('g').attr('id', 'land')
-svg.append('g').attr('id', 'img')
+svg.append('g').attr('id', 'grat');
+svg.append('g').attr('id', 'gratTxt');
+svg.append('g').attr('id', 'land');
+svg.append('g').attr('id', 'img');
 
 var baseProj = baseMap( {container: 'main',
                        extentBounds: [[-180, -90], [179.9999, 90]],
@@ -168,7 +168,7 @@ plotImage({container: 'img',
           imgBounds: [[-180, -20], [180, 20]],
           imgCenter: [-0.0006816584381631697, 7.409997806704224e-05],
           sphere: false
-        })
+        });
 ```
 
 and the css rules
@@ -231,17 +231,17 @@ gdal_translate worldClipReproj.tif world.png -of PNG -outsize 20% 20%
 
 ```javascript
 //define the main container
-var svg = d3.select("body").append("svg")
-    .attr("width", '600')
-    .attr("height", '600')
-    .attr("id", "main");
+var svg = d3.select('body').append('svg')
+    .attr('width', '600')
+    .attr('height', '600')
+    .attr('id', 'main');
 
 //define the order of layers
-svg.append('g').attr('id', 'grat')
-svg.append('g').attr('id', 'img')
-svg.append('g').attr('id', 'coast')
-svg.append('g').attr('id', 'points')
-svg.append('g').attr('id', 'colBar')
+svg.append('g').attr('id', 'grat');
+svg.append('g').attr('id', 'img');
+svg.append('g').attr('id', 'coast');
+svg.append('g').attr('id', 'points');
+svg.append('g').attr('id', 'colBar');
 
 var baseProj = baseMap( {container: 'main',
                        extentBounds: [[-180, 0], [179.9999, 90]],
@@ -340,18 +340,18 @@ ogr2ogr -f GeoJSON -t_srs EPSG:4326 lakes_50m.json ne_50m_lakes/ne_50m_lakes.shp
 
 ```javascript
 //define the main container
-var svg = d3.select("body").append("svg")
-    .attr("width", '600')
-    .attr("height", '600')
-    .attr("id", "main");
+var svg = d3.select('body').append('svg')
+    .attr('width', '600')
+    .attr('height', '600')
+    .attr('id', 'main');
 
 //define the order of layers
-svg.append('g').attr('id', 'grat')
-svg.append('g').attr('id', 'gratTxt')
-svg.append('g').attr('id', 'vector')
-svg.append('g').attr('id', 'coast')
-svg.append('g').attr('id', 'scale')
-svg.append('g').attr('id', 'colBar')
+svg.append('g').attr('id', 'grat');
+svg.append('g').attr('id', 'gratTxt');
+svg.append('g').attr('id', 'vector');
+svg.append('g').attr('id', 'coast');
+svg.append('g').attr('id', 'scale');
+svg.append('g').attr('id', 'colBar');
 
 var baseProj = baseMap( {container: 'main',
                            extentBounds: [[0, 50], [40, 70]],
@@ -453,18 +453,18 @@ and finally in the html file
 ```javascript
 
 /define the main container
-var svg = d3.select("body").append("svg")
-    .attr("width", '600')
-    .attr("height", '600')
-    .attr("id", "main");
+var svg = d3.select('body').append('svg')
+    .attr('width', '600')
+    .attr('height', '600')
+    .attr('id', 'main');
 
 //define the order of layers
-svg.append('g').attr('id', 'grat')
-svg.append('g').attr('id', 'gratTxt')
-svg.append('g').attr('id', 'canvas')
-svg.append('g').attr('id', 'coast')
-svg.append('g').attr('id', 'scale')
-svg.append('g').attr('id', 'colBar')
+svg.append('g').attr('id', 'grat');
+svg.append('g').attr('id', 'gratTxt');
+svg.append('g').attr('id', 'canvas');
+svg.append('g').attr('id', 'coast');
+svg.append('g').attr('id', 'scale');
+svg.append('g').attr('id', 'colBar');
 
 var baseProj = baseMap( {container: 'main',
                        extentBounds: [[19, 34], [28, 42]],
