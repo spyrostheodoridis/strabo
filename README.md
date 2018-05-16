@@ -45,11 +45,11 @@ Then prepare the image. I am using the gdal library for all transformations.
 
 ```bash
 # first clip the raster (it's in wgs84) to the desired extent. The one we use is the Blue Marble raster without the sea
-gdalwarp -te -10 30 120 70 worldMarbleNoWater.tif short.tif -overwrite
+gdalwarp -te -10 30 120 70 worldNoSea.tif worldClip.tif -overwrite
 # then convert it to orthographic projection. lon_0 and lat_0 correspond to the rotation we apply
-gdalwarp -wo SOURCE_EXTRA=200 -wo SAMPLE_GRID=YES -t_srs '+proj=ortho +lon_0=60 +lat_0=50 +x_0=0.0 +y_0=0 +units=m +no_defs ' short.tif shortOrtho.tif -overwrite
+gdalwarp -wo SOURCE_EXTRA=200 -wo SAMPLE_GRID=YES -t_srs '+proj=ortho +lon_0=60 +lat_0=50 +x_0=0.0 +y_0=0 +units=m +no_defs ' worldClip.tif worldClipReproj.tif -overwrite
 # finally convert it to png
-gdal_translate shortOrtho.tif world.png -of PNG -outsize 20% 20%
+gdal_translate worldClipReproj.tif world.png -of PNG -outsize 20% 20%
 ```
 
 We also need to get the png center and at least one edge point in lon/lat datum. This can be done using gdalinfo. We use the following points:  
@@ -72,47 +72,49 @@ svg.append('g').attr('id', 'grat')
 svg.append('g').attr('id', 'land')
 svg.append('g').attr('id', 'img')
 
-var baseProj = baseMap(container = 'main',
-                       extentBounds = [[-180, -90], [179.9999, 90]],
-                       projection = 'Orthographic',
-                       rotate = [-50, -50, 0],
-                       clAngle = 90,
-                       parallel = null
-                       );
+var baseProj = baseMap( {container: 'main',
+                       extentBounds: [[-180, -90], [179.9999, 90]],
+                       projection: 'Orthographic',
+                       rotate: [-50, -60, 0],
+                       clAngle: 90
+                    });
 
-plotGraticule(baseProj, plotGratLines = true, containerLines = 'grat', stepLines = [20, 20], cssLines = 'graticuleLines',
-                    plotOutline = true, containerOut = 'grat', sphereR = 0, cssOut = 'graticuleLines',
-                    plotGratText = false
-                    );
+plotGraticule({base: baseProj, plotGratLines: true, containerLines: 'grat', stepLines: [20, 20], cssLines : 'graticuleLines',
+                    plotOutline: true, containerOut: 'grat', sphereR: 0, cssOut: 'graticuleLines'
+                    });
 
-plotBase(baseProj, topoFile = 'world_50m.topojson', geomName = 'world_50m',
-            plotCoast = false,
-            plotLand = true, containerLand = 'land', cssLand = 'land'
-            );
+plotBase({base: baseProj, topoFile: 'world_10m.topojson', geomName: 'world_10m',
+          plotLand: true, containerLand: 'land', cssLand: 'land'
+        });
 
-plotImage(container = 'img',
-          base = baseProj,
-          imageFile = 'world.png',
-          imgBounds = [[-0.15232519571244724, 12.344536593112801], [155.14505364913532, 32.53258732338759]],
-          imgCenter = [53.180775287372114, 54.90430000342316],
-          sphere = false)
+plotImage({container: 'img',
+          base: baseProj,
+          imageFile: 'world.png',
+          imgBounds: [[0.893981647301399, 7.176719648101456], [153.31851899031952, 33.24681014801683]],
+          imgCenter: [53.28405275947736, 56.18783605229462],
+          sphere: false
+        })
 ```
 
-And the two CSS rules
-
+and the css rules
 ```html
 .land {
     fill: grey;
     fill-opacity: 0.3;
+}
 
 .graticuleLines {
     fill: none;
-    stroke: grey;
-    stroke-width: 0.5;
+    stroke: lightgrey;
+    stroke-width: 1;
 }
 ```
 
 ![alt text](examples/exampl1.png?raw=true)
+
+
+
+
 
 The same can be done in an equal area projection. In the following example we use the Behrmann cylindrical equal area projection
 (standard parallels: 30°N, 30°S). The specific projection is defined using the 'parallel' attribute.
@@ -120,43 +122,81 @@ The same can be done in an equal area projection. In the following example we us
 ```bash
 # again first clip the raster (it's in wgs84) to the desired extent
 #clip
-!gdalwarp -te -180 0 180 90 -t_srs EPSG:4326 worldMarbleNoWater.tif short.tif -overwrite
-#reproject to Behrmann's projection
-!gdalwarp  -wo SOURCE_EXTRA=200 -wo SAMPLE_GRID=YES -t_srs '+proj=cea +lon_0=0 +lat_ts=30 +x_0=0 +y_0=0 +datum=WGS84 +ellps=WGS84 +units=m +no_defs ' short.tif shortBehr.tif -overwrite
+gdalwarp -te -180 -20 180 20 -t_srs EPSG:4326 worldNoSea.tif worldClip.tif -overwrite
+#reproject
+gdalwarp  -wo SOURCE_EXTRA=200 -wo SAMPLE_GRID=YES -t_srs '+proj=cea +lon_0=0 +lat_ts=30 +x_0=0 +y_0=0 +units=m +no_defs ' worldClip.tif worldClipReproj.tif -overwrite
 #tiff to png
-!gdal_translate shortBehr.tif world.png -of PNG -outsize 50% 50%
+gdal_translate worldClipReproj.tif world.png -of PNG -outsize 50% 50%
 ```
 
 The two things we change here is the definition of the projection and the image center/bounds. We also add the graticule text.
 
 ```javascript
-var baseProj = baseMap(container = 'main',
-                        extentBounds = [[-179, -90], [180, 90]],
-                        projection = 'CylindricalEqualArea',
-                        rotate = [0, 0, 0],
-                        clAngle = 0,
-                        parallel = 30
-                        );
+//define the main container
+var svg = d3.select("body").append("svg")
+    .attr("width", '800')
+    .attr("height", '600')
+    .attr("id", "main");
 
-plotGraticule(baseProj, plotGratLines = true, containerLines = 'grat', stepLines = [20, 20], cssLines = 'graticuleLines',
-                    plotOutline = true, containerOut = 'grat', sphereR = 0, cssOut = 'graticuleLines',
-                    plotGratText = true, containerTxt = 'gratTxt', stepTxt = [20,20], cssTxt = 'lonLatLabels', latTxtLon = -180, lonTxtLat = -90, lonOff = 10, latOff = -15
-                    );
+//define the order of layers
+svg.append('g').attr('id', 'grat')
+svg.append('g').attr('id', 'gratTxt')
+svg.append('g').attr('id', 'land')
+svg.append('g').attr('id', 'img')
 
-plotBase(baseProj, topoFile = 'world_50m.topojson', geomName = 'world_50m',
-            plotCoast = false,
-            plotLand = true, containerLand = 'land', cssLand = 'land'
-            );
+var baseProj = baseMap( {container: 'main',
+                       extentBounds: [[-180, -90], [179.9999, 90]],
+                       projection: 'CylindricalEqualArea',
+                       rotate: [0, 0, 0],
+                       clAngle: 0,
+                       parallel: 30,
+                       frame: false
+                    });
 
-plotImage(container = 'img',
-        base = baseProj,
-        imageFile = 'world.png',
-        imgBounds = [[-179.99999999832752, -0.005734303851737857], [179.99275047022692, 89.99933519984673]],
-        imgCenter = [-0.0036247640502935683, 30.107948494285786],
-        sphere = false)
+plotGraticule({base: baseProj, plotGratLines: true, containerLines: 'grat', stepLines: [20, 20], cssLines : 'graticuleLines',
+                    plotOutline: true, containerOut: 'grat', sphereR: 0, cssOut: 'graticuleLines',
+                    plotGratText: true, containerTxt: 'gratTxt', stepTxt: [20,20], cssTxt: 'lonLatLabels', latTxtLon: -180, lonTxtLat: -90, lonOff: 10, latOff: -15
+                    });
+
+plotBase({base: baseProj, topoFile: 'world_10m.topojson', geomName: 'world_10m',
+          plotLand: true, containerLand: 'land', cssLand: 'land'
+        });
+
+plotImage({container: 'img',
+          base: baseProj,
+          imageFile: 'world.png',
+          imgBounds: [[-180, -20], [180, 20]],
+          imgCenter: [-0.0006816584381631697, 7.409997806704224e-05],
+          sphere: false
+        })
 ```
 
+and the css rules
+```html
+.land {
+    fill: grey;
+    fill-opacity: 0.3;
+}
+
+.graticuleLines {
+    fill: none;
+    stroke: lightgrey;
+    stroke-width: 1;
+}
+.lonLatLabels {
+    font-size: 11px;
+    alignment-baseline: middle;
+    text-anchor: middle;
+    fill: black;
+}
+```
+
+
 ![alt text](examples/exampl1a.png?raw=true)
+
+
+
+
 
 
 ### Plot points on images
@@ -167,9 +207,9 @@ We also add the coastline. Instead of plotting the outline of the graticule (whi
 around the image using the sphereR (radius = 90 degrees) argument.
 
 ```bash
-gdalwarp -te -180 0 180 90 worldMarbleNoWater.tif short.tif -overwrite
-gdalwarp wo SOURCE_EXTRA=200 -wo SAMPLE_GRID=YES -t_srs '+proj=ortho +lon_0=0 +lat_0=90 +x_0=0.0 +y_0=0 +units=m +no_defs ' short.tif shortOrtho.tif -overwrite
-gdal_translate shortOrtho.tif world.png -of PNG -outsize 20% 20%
+gdalwarp -te -180 0 180 90 worldNoSea.tif worldClip.tif -overwrite
+gdalwarp -wo SOURCE_EXTRA=200 -wo SAMPLE_GRID=YES -t_srs '+proj=ortho +lon_0=0 +lat_0=90 +x_0=0.0 +y_0=0 +datum=WGS84 +ellps=WGS84 +units=m +no_defs' worldClip.tif worldClipReproj.tif -overwrite
+gdal_translate worldClipReproj.tif world.png -of PNG -outsize 20% 20%
 ```
 
 ```html
@@ -181,76 +221,76 @@ gdal_translate shortOrtho.tif world.png -of PNG -outsize 20% 20%
 .graticuleLines {
     fill: none;
     stroke: grey;
-    stroke-width: 0.5;
+    stroke-width: 1;
 }
 
-.lonLatLabels {
-    font-size: 14px;
-    alignment-baseline: middle;
-    text-anchor: middle;
-    fill: red;
+.geoPoints {
+    fill-opacity: 1;
 }
 ```
 
 ```javascript
-
-<script type="text/javascript">
-    var svg = d3.select("body").append("svg")
+//define the main container
+var svg = d3.select("body").append("svg")
     .attr("width", '600')
     .attr("height", '600')
     .attr("id", "main");
 
-    svg.append('g').attr('id', 'grat')
-    svg.append('g').attr('id', 'img')
-    svg.append('g').attr('id', 'coast')
-    svg.append('g').attr('id', 'points')
-    svg.append('g').attr('id', 'colBarPoint')
+//define the order of layers
+svg.append('g').attr('id', 'grat')
+svg.append('g').attr('id', 'img')
+svg.append('g').attr('id', 'coast')
+svg.append('g').attr('id', 'points')
+svg.append('g').attr('id', 'colBar')
 
-    var baseProj = baseMap(container = 'main',
-                           extentBounds = [[-180, 0], [179.9999, 90]],
-                           projection = 'Orthographic',
-                           rotate = [0, -90, 0],
-                           clAngle = 90,
-                           parallel = null
-                           );
-    
-    plotGraticule(baseProj, plotGratLines = true, containerLines = 'grat', stepLines = [20, 20], cssLines = 'graticuleLines',
-                    plotOutline = true, containerOut = 'grat', sphereR = 90, cssOut = 'graticuleLines',
-                    plotGratText = false
-                    );
+var baseProj = baseMap( {container: 'main',
+                       extentBounds: [[-180, 0], [179.9999, 90]],
+                       projection: 'Orthographic',
+                       rotate: [0, -90, 0],
+                       clAngle: 90.0001
+                    });
 
-    plotBase(baseProj, topoFile = 'world_50m.topojson', geomName = 'world_50m',
-            plotCoast = True, containerCoast= 'coast', cssCoast = 'coast',
-            plotLand = false
-            );
+plotGraticule({base: baseProj, plotGratLines: true, containerLines: 'grat', stepLines: [20, 20], cssLines : 'graticuleLines',
+                    plotOutline: true, containerOut: 'grat', sphereR: 90, cssOut: 'graticuleLines'
+                    });
 
-    plotImage(container = 'img',
-              base = baseProj,
-              imageFile = 'world.png',
-              imgBounds = [],
-              imgCenter = [],
-              sphere = true)
+plotBase({base: baseProj, topoFile: 'world_10m.topojson', geomName: 'world_10m',
+          plotCoast: true, containerCoast: 'coast', cssCoast: 'coast'
+        });
 
-    var colSclPoint = plotPoints(container = 'points',
-                                 base = baseProj, pointFile = 'samples.csv',
-                                 pointR = 5, 
-                                 colorVar = 'Altitude',
-                                 colorScale = 'Linear',
-                                 colorRange = ['red', 'blue'],
-                                 cssStyle = 'geoPoints')
+plotImage({container: 'img',
+          base: baseProj,
+          imageFile: 'world.png',
+          imgBounds: [],
+          imgCenter: [],
+          sphere: true
+        });
 
-    setTimeout(function() { plotColBar(container = 'colBarPoint',
-                                       x = 110, y = 30,
-                                       width = 30, height = 120, 
-                                       colScale = colSclPoint, 
-                                       nOfSections = 100, 
-                                       text = true, 
-                                       barTextDigits = 0, 
-                                       barTitle = 'Altitude (m a.s.l)', 
-                                       horizontal = false); }, 50);
+const colSclPoint = plotPoints({container : 'points',
+                             base: baseProj, pointFile: 'samples.csv',
+                             pointR: 5, 
+                             colorVar: 'Altitude',
+                             colorScale: 'Linear',
+                             colorRange: ['red', 'blue'],
+                             cssStyle: 'geoPoints'
+                         });
+
+setTimeout(function() { plotColBar({ container: 'colBar',
+                                   x: 100, y: 40,
+                                   width: 30, height: 120, 
+                                   colScale: colSclPoint, 
+                                   nOfSections: 100, 
+                                   text: true, 
+                                   barTextDigits: 0, 
+                                   barTitle: 'Altitude (m a.s.l)', 
+                                   horizontal: false }); }, 500);
 ```
 
 ![alt text](examples/exampl2.png?raw=true)
+
+
+
+
 
 
 ### Plot vectors
@@ -271,11 +311,24 @@ ogr2ogr -f GeoJSON -t_srs EPSG:4326 lakes_50m.json ne_50m_lakes/ne_50m_lakes.shp
 
 .vectorFeatures{
     fill-opacity: 0.7;
-    fill: blue;
+}
+
+.graticuleLines {
+    fill: none;
+    stroke: lightgrey;
+    stroke-width: 1;
+}
+
+.lonLatLabels {
+    font-size: 14px;
+    alignment-baseline: middle;
+    text-anchor: middle;
+    fill: black;
 }
 
 .legendTxt{
-    font-size: 14px;
+    font-size: 16px;
+    fill: black;
 }
 
 .scaleBar {
@@ -286,6 +339,13 @@ ogr2ogr -f GeoJSON -t_srs EPSG:4326 lakes_50m.json ne_50m_lakes/ne_50m_lakes.shp
 ```
 
 ```javascript
+//define the main container
+var svg = d3.select("body").append("svg")
+    .attr("width", '600')
+    .attr("height", '600')
+    .attr("id", "main");
+
+//define the order of layers
 svg.append('g').attr('id', 'grat')
 svg.append('g').attr('id', 'gratTxt')
 svg.append('g').attr('id', 'vector')
@@ -293,55 +353,46 @@ svg.append('g').attr('id', 'coast')
 svg.append('g').attr('id', 'scale')
 svg.append('g').attr('id', 'colBar')
 
-var baseProj = baseMap(container = 'main',
-                        extentBounds = [[0, 50], [40, 70]],
-                        projection = 'ConicConformal',
-                        rotate = [-20, 0, 0],
-                        clAngle = 0, 
-                        parallel = null
-                        );
-    
-plotGraticule(baseProj, plotGratLines = true, containerLines = 'grat', stepLines = [5, 5], cssLines = 'graticuleLines',
-                    plotOutline = true, containerOut = 'grat', sphereR = 0, cssOut = 'graticuleLines',
-                    plotGratText = true, containerTxt = 'gratTxt', stepTxt = [5,5], cssTxt = 'lonLatLabels', latTxtLon = 0, lonTxtLat = 50, lonOff = 10, latOff = -10
-                    );
+var baseProj = baseMap( {container: 'main',
+                           extentBounds: [[0, 50], [40, 70]],
+                           projection: 'ConicConformal',
+                           rotate: [-20, 0, 0]
+                        });
+
+plotGraticule( {base: baseProj, plotGratLines: true, containerLines: 'grat', stepLines: [5, 5], cssLines: 'graticuleLines',
+                    plotOutline: true, containerOut: 'grat', sphereR: 0, cssOut: 'graticuleLines',
+                    plotGratText: true, containerTxt: 'gratTxt', stepTxt: [5,5], cssTxt: 'lonLatLabels', latTxtLon: 0, lonTxtLat: 50, lonOff: 10, latOff: -10
+                    });
+
+plotScale( {container:'scale', base: baseProj, x0: 14, y0: 52, dx: 500, unit: 'km', increment: 0.0001,
+            precDiff: 10, greatCircle: false, cssBar: 'scaleBar', cssTxt: 'legendTxt'} );
 
 
-plotScale('scale', baseProj, [14, 52], 500, unit = 'km', increment = 0.0001, precDiff = 10, greatCircle = false, cssStyle = 'scaleBar')
+plotBase( {base: baseProj, topoFile: 'world_10m.topojson', geomName: 'world_10m',
+          plotCoast: true, containerCoast: 'coast', cssCoast: 'coast'
+        });
 
-plotBase(baseProj, topoFile = 'world_50m.topojson', geomName = 'world_50m',
-            plotCoast = True, containerCoast= 'coast', cssCoast = 'coast',
-            plotLand = false
-            );
+const colSclVector = plotVector( {container: 'vector', base: baseProj, vectorFile: 'lakes_50m.json', vctFormat: 'geoJson',
+            vctProperty: 'scalerank', colorScale: 'Linear', colorRange: ['#37FDFC', '#0276FD']} );
 
-var colSclVector = plotVector(container = 'vector', 
-                                  base = baseProj, 
-                                  vectorFile = 'lakes_50m.json', 
-                                  vctFormat = 'geoJson',
-                                  geomName = '', 
-                                  vctProperty = 'scalerank', 
-                                  excludeValues = [],
-                                  vctDataScale = 1, 
-                                  colorScale = 'Linear', 
-                                  colorRange = ['#37FDFC', '#0276FD'], 
-                                  cssStyle = 'vectorFeatures', 
-                                  renderCanvas = false,
-                                  canvasWidth = null,
-                                  canvasHeight = null);
 
-setTimeout(function() { plotColBar(container = 'colBar',
-                                   x = 350, y = 470,
-                                   width = 130, height = 20, 
-                                   colScale = colSclVector, 
-                                   nOfSections = 150, 
-                                   text = true, 
-                                   barTextDigits = 0, 
-                                   barTitle = 'Lake Rank', 
-                                   horizontal = true,
-                                   cssStyle = 'legendTxt'); }, 50);
+setTimeout(function() { plotColBar({ container: 'colBar',
+                                       x: 350, y: 470,
+                                       width: 130, height: 20, 
+                                       colScale: colSclVector, 
+                                       nOfSections: 100, 
+                                       text: true, 
+                                       barTextDigits: 0, 
+                                       barTitle: 'Rank', 
+                                       horizontal: true,
+                                       cssTxt: 'legendTxt'}); }, 500);
 ```
 
 ![alt text](examples/exampl3.png?raw=true)
+
+
+
+
 
 ### Plot rasters
 Raster datasets can be quite heavy for visualization programs to process. strabo utilizes the canvas element to make
@@ -364,6 +415,16 @@ chorospy.rasterToJSON('climD3.tif', 'climD3.json')
 and finally in the html file
 
 ```html
+.coast {
+    fill: none;
+    stroke: black;
+    stroke-width: 0.3;
+}
+
+.vectorFeatures{
+    fill-opacity: 0.7;
+}
+
 .graticuleLines {
     fill: none;
     stroke: lightgrey;
@@ -377,14 +438,9 @@ and finally in the html file
     fill: black;
 }
 
-.coast {
-    fill: none;
-    stroke: black;
-    stroke-width: 0.3;
-}
-
 .legendTxt{
-    font-size: 14px;
+    font-size: 16px;
+    fill: black;
 }
 
 .scaleBar {
@@ -396,55 +452,57 @@ and finally in the html file
 
 ```javascript
 
+/define the main container
+var svg = d3.select("body").append("svg")
+    .attr("width", '600')
+    .attr("height", '600')
+    .attr("id", "main");
+
+//define the order of layers
 svg.append('g').attr('id', 'grat')
 svg.append('g').attr('id', 'gratTxt')
-vg.append('g').attr('id', 'canvas')
+svg.append('g').attr('id', 'canvas')
 svg.append('g').attr('id', 'coast')
 svg.append('g').attr('id', 'scale')
 svg.append('g').attr('id', 'colBar')
 
+var baseProj = baseMap( {container: 'main',
+                       extentBounds: [[19, 34], [28, 42]],
+                       projection: 'TransverseMercator',
+                       rotate: [-21, 0, 0]
+                    });
 
-var baseProj = baseMap(container = 'main',
-                        extentBounds = [[19, 34], [28, 45]],
-                        projection = 'TransverseMercator',
-                        rotate = [-21, 0, 0],
-                        clAngle = 0, 
-                        parallel = null
-                        );
-    
-plotGraticule(baseProj, plotGratLines = true, containerLines = 'grat', stepLines = [5, 5], cssLines = 'graticuleLines',
-                    plotOutline = true, containerOut = 'grat', sphereR = 0, cssOut = 'graticuleLines',
-                    plotGratText = true, containerTxt = 'gratTxt', stepTxt = [5,5], cssTxt = 'lonLatLabels', latTxtLon = 19, lonTxtLat = 45, lonOff = -10, latOff = -10
-                    );
-s
-plotScale('scale', baseProj, [20, 35], 200, unit = 'km', increment = 0.0001, precDiff = 10, greatCircle = false, cssStyle = 'scaleBar')
+plotGraticule( {base: baseProj, plotGratLines: true, containerLines: 'grat', stepLines: [5, 5], cssLines: 'graticuleLines',
+                    plotOutline: true, containerOut: 'grat', sphereR: 0, cssOut: 'graticuleLines',
+                    plotGratText: true, containerTxt: 'gratTxt', stepTxt: [5,5], cssTxt: 'lonLatLabels', latTxtLon: 19, lonTxtLat: 34, lonOff: 10, latOff: -10
+                    });
 
-plotBase(baseProj, topoFile = 'world_50m.topojson', geomName = 'world_50m',
-            plotCoast = True, containerCoast= 'coast', cssCoast = 'coast',
-            plotLand = false
-            );
+plotScale( {container:'scale', base: baseProj, x0: 20, y0: 35, dx: 100, unit: 'km', increment: 0.0001,
+            precDiff: 5, greatCircle: false, cssBar: 'scaleBar', cssTxt: 'legendTxt'} );
 
-var colSclImg = plotRaster(container = 'canvas', 
-                               base = baseProj, 
-                               rasterFile = 'climD3.json', 
-                               dataScale = 10, 
-                               excludeValues = [], 
-                               colorScale = 'Linear', 
-                               colorRange = ['blue', 'red'], 
-                               rScale = 5, 
-                               sphere = false);
-    
 
-setTimeout(function() { plotColBar(container = 'colBar',
-                               x = 220, y = 400,
-                               width = 130, height = 20, 
-                               colScale = colSclImg, 
-                               nOfSections = 150, 
-                               text = true, 
-                               barTextDigits = 1, 
-                               barTitle = 'Annual Mean Temperature (C°)', 
-                               horizontal = true,
-                               cssStyle = 'legendTxt'); }, 5000);
+plotBase( {base: baseProj, topoFile: 'world_10m.topojson', geomName: 'world_10m',
+          plotCoast: true, containerCoast: 'coast', cssCoast: 'coast'
+        });
+
+var colSclImg = plotRaster({container: 'canvas', 
+                           base: baseProj, 
+                           rasterFile: 'climD3.json', 
+                           dataScale: 10,  
+                           colorScale: 'Linear', 
+                           colorRange: ['blue', 'red'],
+                           colorInterpolate: 'HslLong',
+                           rScale: 5} );
+
+setTimeout(function() { plotColBar({ container: 'colBar',
+                                   x: 100, y: 450,
+                                   width: 100, height: 20, 
+                                   colScale: colSclImg, 
+                                   nOfSections: 100, 
+                                   barTextDigits: 0, 
+                                   barTitle: 'Annual Mean Temperature (C°)', 
+                                   horizontal: true,
+                                   cssTxt: 'legendTxt'}); }, 1000);
 ```
 
 ![alt text](examples/exampl4.png?raw=true)

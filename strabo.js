@@ -1,5 +1,6 @@
 
-function baseMap (container, extentBounds, projection, rotate, clAngle, parallel, frame = true, frameFill = 0.9, translateScaleX = 2, translateScaleY = 2) {
+function baseMap ( {container, extentBounds, projection, rotate, clAngle,
+					parallel = null, frame = true, frameFill = 0.9, translateScaleX = 2, translateScaleY = 2 } = {} ) {
 
 	const mainPlot = d3.select('#' + container);
 
@@ -9,7 +10,7 @@ function baseMap (container, extentBounds, projection, rotate, clAngle, parallel
 			.attr('height', '100%')
 			.attr('x', 0).attr('y', 0)
 			.style('fill','none')
-			.style('stroke', (frame===true) ? 'black': 'none');
+			.style('stroke', (frame === true) ? 'black': 'none');
 
 
 	const width = mainPlot.node().getBBox().width;
@@ -51,9 +52,9 @@ function baseMap (container, extentBounds, projection, rotate, clAngle, parallel
 }
 
 
-function plotGraticule(base, plotGratLines = false, containerLines = '', stepLines = [], cssLines = '', 
+function plotGraticule( {base, plotGratLines = false, containerLines = '', stepLines = [], cssLines = '', 
 							plotOutline = false, containerOut = '', sphereR = 0, cssOut = '',
-							plotGratText = false, containerTxt = '', stepTxt = [], cssTxt = '', latTxtLon, lonTxtLat, lonOff = 0, latOff = 0) {
+							plotGratText = false, containerTxt = '', stepTxt = [], cssTxt = '', latTxtLon, lonTxtLat, lonOff = 0, latOff = 0 } = {}) {
 
 	let path = d3.geoPath().projection(base.projection);
 
@@ -100,7 +101,7 @@ function plotGraticule(base, plotGratLines = false, containerLines = '', stepLin
 }
 
 
-function plotScale(container, base, [x0, y0], dx, unit = 'km', increment = 0.0001, precDiff = 0, greatCircle = false, cssStyle = '') {
+function plotScale( {container, base, x0, y0, dx, unit = 'km', increment = 0.0001, precDiff = 0, greatCircle = false, cssBar, cssTxt} = {} ) {
 
 	let cont = d3.select('#' + container);
 
@@ -173,13 +174,14 @@ function plotScale(container, base, [x0, y0], dx, unit = 'km', increment = 0.000
 		arcs = {type: 'LineString', coordinates: [ p1, endPoint]};
 
 		cont.append('path')
-			.attr('class', cssStyle)
+			.attr('class', cssBar)
     		.attr('d', path(arcs));  // great arc's path
 
-    	const scaleText = container.append('text')
+    	const scaleText = cont.append('text')
 			.text(dist + 'm')
 			.attr('y', p1Pix[1])
-			.attr('dy', '1.2em');
+			.attr('dy', '1.2em')
+			.attr('class', cssTxt);
 
 		const bboxScaleT = scaleText.node().getBBox();
 		scaleText.attr('x', p1Pix[0] + (baseProj.projection(endPoint)[0] - p1Pix[0])/2 - bboxScaleT.width/2);
@@ -192,12 +194,13 @@ function plotScale(container, base, [x0, y0], dx, unit = 'km', increment = 0.000
 			.attr('y', p1Pix[1])
 			.attr('width', barWidth)
 			.attr('height', 1)
-			.attr('class', cssStyle);
+			.attr('class', cssBar);
 
-		const scaleText = container.append('text')
+		const scaleText = cont.append('text')
 			.text((unit === 'km') ? dist + 'km' : dist + 'm')
 			.attr('y', p1Pix[1])
-			.attr('dy', '1.2em');
+			.attr('dy', '1.2em')
+			.attr('class', cssTxt);
 
 		const bboxScaleT = scaleText.node().getBBox();
 		scaleText.attr('x', p1Pix[0] + (baseProj.projection(endPoint)[0] - p1Pix[0])/2 - bboxScaleT.width/2);
@@ -206,20 +209,19 @@ function plotScale(container, base, [x0, y0], dx, unit = 'km', increment = 0.000
 	
 }
 
-function plotBase(base, topoFile, geomName,
-				plotCoast = false, containerCoast= '', cssCoast = '',
-				plotLand = false, containerLand = '', cssLand = '',
-				plotCountries = false, containerCountries = '', cssCountries = '') {
-
+function plotBase( {base, topoFile, geomName,
+				plotCoast, containerCoast, cssCoast,
+				plotLand, containerLand, cssLand,
+				plotCountries, containerCountries, cssCountries} = {plotCoast: false, plotLand: false, plotCountries: false} ) {
 
 	let path = d3.geoPath().projection(base.projection);
 
 	const clipID = 'baseClip'
 
-	let clipCont = d3.select('#' + containerLand) || d3.select('#' + containerCoast) || d3.select('#' + containerCountries);
+	let clipCont = containerCoast || containerLand || containerCountries;
 
 	// make new clip path from graticule.outline 
-	const clPath = clipCont.append('clipPath')
+	const clPath = d3.select('#' + clipCont).append('clipPath')
 		.attr('id', clipID)
 		.append('path')
 		.attr('id', clipID + 'Path')
@@ -257,14 +259,14 @@ function plotBase(base, topoFile, geomName,
 }
 
 
-function plotImage(container, base, imageFile, imgBounds, imgCenter, sphere = false) {
+function plotImage({container, base, imageFile, imgBounds, imgCenter, sphere = false} = {}) {
 
 	const clipID = container + 'Clip'
 	const path = d3.geoPath().projection(base.projection);
-	var container = d3.select('#' + container);
+	var cont = d3.select('#' + container);
 
 	// make new clip path from graticule.outline 
-	const clPath = container.append('clipPath')
+	const clPath = cont.append('clipPath')
 		.attr('id', clipID)
 		.append('path')
 		.attr('id', clipID + 'Path')
@@ -279,7 +281,7 @@ function plotImage(container, base, imageFile, imgBounds, imgCenter, sphere = fa
 		const rasterDims = getGlobeDims(mapCenter, base)
 		const projCenter = base.projection(mapCenter)
 
-		container.append('svg:image')
+		cont.append('svg:image')
 			.attr('x', projCenter[0] - rasterDims[0]/2)
 			.attr('y', projCenter[1] - rasterDims[1]/2)
 			.attr('xlink:href', imageFile)
@@ -295,7 +297,7 @@ function plotImage(container, base, imageFile, imgBounds, imgCenter, sphere = fa
 		var projRasterWidth = Math.abs(2*d3.max(imgBounds.map(d=>projCenter[0] - base.projection(d)[0])));
 		var projRasterHeight = Math.abs(2*d3.max(imgBounds.map(d=>projCenter[1] - base.projection(d)[1])));
 
-		container.append('svg:image')
+		cont.append('svg:image')
 			.attr('x', projCenter[0] - projRasterWidth/2)
 			.attr('y', projCenter[1] - projRasterHeight/2)
 			.attr('xlink:href', imageFile)
@@ -306,15 +308,15 @@ function plotImage(container, base, imageFile, imgBounds, imgCenter, sphere = fa
 }
 
 
-function plotPoints(container, base, pointFile, pointR, colorVar, colorScale, colorRange, cssStyle = '') {
+function plotPoints({container, base, pointFile, pointR, colorVar, colorScale, colorDomain = [], colorRange, colorInterpolate = 'Hsl', cssStyle} = {}) {
 
 	const clipID = container + 'Clip'
-	var container = d3.select('#' + container);
+	var cont = d3.select('#' + container);
 
 	const path = d3.geoPath().projection(base.projection);
 
 	// make new clip path from graticule.outline 
-	const clPath = container.append('clipPath')
+	const clPath = cont.append('clipPath')
 		.attr('id', clipID)
 		.append('path')
 		.attr('id', clipID + 'Path')
@@ -348,7 +350,7 @@ function plotPoints(container, base, pointFile, pointR, colorVar, colorScale, co
 		//add features to DOM, keep them invisible
 		//only features rendered with geopath will have a 'd' attribute
 		var ptDataSet = new Set();
-		const dataPts = container.selectAll('.geoP')
+		const dataPts = cont.selectAll('.geoP')
 	  		.data(geoFeat.features)
           .enter().append('path')
 	  		.attr('d', path)
@@ -367,14 +369,24 @@ function plotPoints(container, base, pointFile, pointR, colorVar, colorScale, co
 		const ptData = [];
 		ptDataSet.forEach(v => ptData.push(v));
 		ptDataSet = null;
+		
 		//define color scale
 		if (colorScale === 'Linear'){
-			colScl.interpolate(d3.interpolateHsl).domain(d3.extent(ptData)).range(colorRange)
+			if (colorDomain.length != 0){
+				var cDomain = colorDomain;
+				cDomain.unshift(d3.extent(ptData)[0]);
+				cDomain.push(d3.extent(ptData)[1]);
+			}else{
+				var cDomain =  d3.extent(ptData);
+			};
+			colScl.interpolate(eval('d3.interpolate' + colorInterpolate))
+				.domain(cDomain).range(colorRange)
 		}
 		else if (colorScale === 'Ordinal'){
 			colScl.domain(ptData.sort(d3.ascending)).range(colorRange)
-		}
-		
+		};
+
+
 		//render points
 		d3.selectAll('.'+ cssStyle).each(function(d, i){
 			d3.select(this)
@@ -391,7 +403,8 @@ function plotPoints(container, base, pointFile, pointR, colorVar, colorScale, co
 }
 
 
-function plotVector(container, base, vectorFile, vctFormat, geomName, vctProperty, excludeValues, vctDataScale, colorScale, colorRange, cssStyle = '', renderCanvas = false, canvasWidth, canvasHeight, cnvRes){
+function plotVector( {container, base, vectorFile, vctFormat, geomName, vctProperty, excludeValues = [], vctDataScale = 1, 
+					colorScale, colorDomain = [], colorRange, colorInterpolate = 'Hsl', cssStyle, renderCanvas = false, canvasWidth, canvasHeight, cnvRes} ){
 
 	const clipID = container + 'Clip'
 
@@ -456,7 +469,7 @@ function plotVector(container, base, vectorFile, vctFormat, geomName, vctPropert
 	  			//now select only the desired features (those in the path and with the included values)
 	  			if (el._groups[0][0].hasAttribute('d') && turf.intersect(d, base.graticule.outline()) && excludeValues.indexOf(d.properties[vctProperty]) === -1 && d.properties[vctProperty]){
 	  				vctDataSet.add((d.properties[vctProperty] / vctDataScale) || d.properties[vctProperty] )
-	  				el.attr('class', cssStyle)//append the class to the selected features
+	  				el.attr('class', 'selectedFeat')//append the class to the selected features
 	  			}	
 	  		})
 	  		.style('display', 'none')
@@ -465,13 +478,22 @@ function plotVector(container, base, vectorFile, vctFormat, geomName, vctPropert
 		const vctData = [];
 		vctDataSet.forEach(v => vctData.push(v));
 		vctDataSet = null;
+
 		//define color scale
 		if (colorScale === 'Linear'){
-			colScl.interpolate(d3.interpolateHsl).domain(d3.extent(vctData)).range(colorRange)
+			if (colorDomain.length != 0){
+				var cDomain = colorDomain;
+				cDomain.unshift(d3.extent(vctData)[0]);
+				cDomain.push(d3.extent(vctData)[1]);
+			}else{
+				var cDomain =  d3.extent(vctData);
+			};
+			colScl.interpolate(eval('d3.interpolate' + colorInterpolate))
+				.domain(cDomain).range(colorRange)
 		}
 		else if (colorScale === 'Ordinal'){
-			colScl.domain(vctData.sort(d3.ascending)).range(colorRange)
-		}
+			colScl.domain(ptData.sort(d3.ascending)).range(colorRange)
+		};
 
 		// define clip path for canvas
 		if (renderCanvas === true) {
@@ -485,7 +507,7 @@ function plotVector(container, base, vectorFile, vctFormat, geomName, vctPropert
 		};
 
 		// render features
-		d3.selectAll('.'+ cssStyle).each(function(d, i){
+		d3.selectAll('.selectedFeat').each(function(d, i){
 				
 			if (renderCanvas === true) {
 				fillCol = d3.rgb(colScl(d.properties[vctProperty] / vctDataScale || d.properties[vctProperty]));
@@ -504,6 +526,7 @@ function plotVector(container, base, vectorFile, vctFormat, geomName, vctPropert
 				d3.select(this)
 			  		.attr('clip-path', 'url(#' + clipID + ')')
 			  		.style('display', null)
+			  		.attr('class', cssStyle)
 			  		.style('fill', function(d) {
 			  			if (excludeValues.indexOf(d.properties[vctProperty]) === -1) {
 			  				return colScl(d.properties[vctProperty] / vctDataScale || d.properties[vctProperty])
@@ -524,16 +547,17 @@ function plotVector(container, base, vectorFile, vctFormat, geomName, vctPropert
 }
 
 
-function plotRaster(container, base, rasterFile, dataScale, excludeValues = [], colorScale, colorDomain = [], colorRange, rScale = 150, sphere = false){
+function plotRaster({container, base, rasterFile, dataScale, excludeValues = [],
+					colorScale, colorDomain = [], colorRange, colorInterpolate = 'Hsl', rScale = 150, sphere = false} = {}){
 
 	const clipID = container + 'Clip'
 
-	var container = d3.select('#' + container);
+	var cont = d3.select('#' + container);
 
 	const path = d3.geoPath().projection(base.projection);
 
 	// make new clip path from graticule.outline 
-	const clPath = container.append('clipPath')
+	const clPath = cont.append('clipPath')
 		.attr('id', clipID)
 		.append('path')
 		.attr('id', clipID + 'Path')
@@ -621,11 +645,11 @@ function plotRaster(container, base, rasterFile, dataScale, excludeValues = [], 
 			}else{
 				var cDomain =  d3.extent(imgData);
 			};
-			colScl.interpolate(d3.interpolateHslLong)
+			colScl.interpolate(eval('d3.interpolate' + colorInterpolate))
 				.domain(cDomain).range(colorRange)
 		}
 		else if (colorScale === 'Ordinal'){
-			colScl.domain(imgData.sort(d3.ascending)).range(colorRange)
+			colScl.domain(ptData.sort(d3.ascending)).range(colorRange)
 		};
 
 		imgDataSet = null;
@@ -668,8 +692,8 @@ function plotRaster(container, base, rasterFile, dataScale, excludeValues = [], 
 		const ImageD = canvas.node().toDataURL('img/png');
 		d3.select('#tmpCanvas').remove() // remove invisible canvas
 		//load image
-		container.attr('clip-path', 'url(#' + clipID + ')'); //clip parent g element (otherwise transformation will influence the clip path)
-		const canvIm = container.append('svg:image')
+		cont.attr('clip-path', 'url(#' + clipID + ')'); //clip parent g element (otherwise transformation will influence the clip path)
+		const canvIm = cont.append('svg:image')
 				.datum(ImageD)
 				.attr('xlink:href', function(d) {return d})
 				.attr('height', projRasterHeight)
@@ -741,17 +765,17 @@ function inside(point, vs) {
 };
 
 // function to plot color bar
-function plotColBar(container, x, y, width, height, colScale, nOfSections, text, barTextDigits, barTitle, horizontal, cssStyle) {
+function plotColBar({container, x, y, width, height, colScale, nOfSections, text = true, barTextDigits, barTitle, horizontal, cssTxt} = {}) {
 	
-	var container = d3.select('#' + container);
-	const leg = container.append('g').attr('id', 'bar');
+	var cont = d3.select('#' + container);
+	const leg = cont.append('g').attr('id', 'bar');
 
 	// the bar is initially constructed horizontally then rotated
 	const nWidth = (horizontal) ? width : height;
 	const nHeight = (horizontal) ? height : width;
 
 	// get data extent
-	const dataExt = colScale.domain();
+	const dataExt = d3.extent(colScale.domain());
 
 	//bar outline 
 	leg.append('rect')
@@ -793,11 +817,11 @@ function plotColBar(container, x, y, width, height, colScale, nOfSections, text,
 		(horizontal) ? leg .attr('transform', 'translate(' + x +',' + y +')') : leg.attr('transform','matrix(' + matrix + ')'); 
 
 		if (text === true) {
-			var barText = container.append('g')
+			var barText = cont.append('g')
 			barText.selectAll('.colText')
 				.data(dataExt)
 			  .enter().append('text')
-			  	.attr('class', cssStyle)
+			  	.attr('class', cssTxt)
 			    .text(function (d) {return d.toFixed(barTextDigits) } )
 			    .each(function(d,i) {
 			    	d3.select(this)
@@ -832,11 +856,11 @@ function plotColBar(container, x, y, width, height, colScale, nOfSections, text,
 		(horizontal) ? leg .attr('transform', 'translate(' + x +',' + y +')') : leg.attr('transform','matrix(' + matrix + ')'); 
 
 		if (text === true) {
-			var barText = container.append('g')
+			var barText = cont.append('g')
 			barText.selectAll('.colText')
 				.data(colScale.domain())
 			  .enter().append('text')
-			    .attr('class', cssStyle)
+			    .attr('class', cssTxt)
 			    .text(function (d) {return (typeof d === 'string') ? d: d.toFixed(barTextDigits) } )
 			    .each(function(d,i) {
 			    	d3.select(this)
@@ -851,9 +875,9 @@ function plotColBar(container, x, y, width, height, colScale, nOfSections, text,
 	// bar title
 	barText.append('text')
 		.text(barTitle)
-		.attr('class', cssStyle)
+		.attr('class', cssTxt)
 		.attr('x', (horizontal) ? x + (nWidth+3)/2 : x + (nHeight+3)/2 )
-		.attr('y', y - 7)
+		.attr('y', y - 10)
 		.attr('text-anchor', 'middle');
 
 };
