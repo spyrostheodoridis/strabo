@@ -80,7 +80,7 @@ var baseProj = baseMap( {container: 'main',
                     });
 
 plotGraticule({base: baseProj, plotGratLines: true, containerLines: 'grat', stepLines: [20, 20], cssLines : 'graticuleLines',
-                    plotOutline: true, containerOut: 'grat', sphereR: 0, cssOut: 'graticuleLines'
+                    plotOutline: true, containerOut: 'grat', cssOut: 'graticuleLines'
                     });
 
 plotBase({base: baseProj, topoFile: 'world_10m.topojson', geomName: 'world_10m',
@@ -154,7 +154,7 @@ var baseProj = baseMap( {container: 'main',
                     });
 
 plotGraticule({base: baseProj, plotGratLines: true, containerLines: 'grat', stepLines: [20, 20], cssLines : 'graticuleLines',
-                    plotOutline: true, containerOut: 'grat', sphereR: 0, cssOut: 'graticuleLines',
+                    plotOutline: true, containerOut: 'grat', cssOut: 'graticuleLines',
                     plotGratText: true, containerTxt: 'gratTxt', stepTxt: [20,20], cssTxt: 'lonLatLabels', latTxtLon: -180, lonTxtLat: -90, lonOff: 10, latOff: -15
                     });
 
@@ -360,7 +360,7 @@ var baseProj = baseMap( {container: 'main',
                         });
 
 plotGraticule( {base: baseProj, plotGratLines: true, containerLines: 'grat', stepLines: [5, 5], cssLines: 'graticuleLines',
-                    plotOutline: true, containerOut: 'grat', sphereR: 0, cssOut: 'graticuleLines',
+                    plotOutline: true, containerOut: 'grat', cssOut: 'graticuleLines',
                     plotGratText: true, containerTxt: 'gratTxt', stepTxt: [5,5], cssTxt: 'lonLatLabels', latTxtLon: 0, lonTxtLat: 50, lonOff: 10, latOff: -10
                     });
 
@@ -473,7 +473,7 @@ var baseProj = baseMap( {container: 'main',
                     });
 
 plotGraticule( {base: baseProj, plotGratLines: true, containerLines: 'grat', stepLines: [5, 5], cssLines: 'graticuleLines',
-                    plotOutline: true, containerOut: 'grat', sphereR: 0, cssOut: 'graticuleLines',
+                    plotOutline: true, containerOut: 'grat', cssOut: 'graticuleLines',
                     plotGratText: true, containerTxt: 'gratTxt', stepTxt: [5,5], cssTxt: 'lonLatLabels', latTxtLon: 19, lonTxtLat: 34, lonOff: 10, latOff: -10
                     });
 
