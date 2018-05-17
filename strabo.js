@@ -408,12 +408,12 @@ function plotVector( {container, base, vectorFile, vctFormat, geomName, vctPrope
 
 	const clipID = container + 'Clip'
 
-	var container = d3.select('#' + container);
+	var cont = d3.select('#' + container);
 
 	var path = d3.geoPath().projection(base.projection);
 
 	// make new clip path from graticule.outline 
-	const clPath = container.append('clipPath')
+	const clPath = cont.append('clipPath')
 		.attr('id', clipID)
 		.append('path')
 		.attr('id', clipID + 'Path')
@@ -424,7 +424,7 @@ function plotVector( {container, base, vectorFile, vctFormat, geomName, vctPrope
 
 		var ratio = window.devicePixelRatio || 1;
 
-		var fo = container.append('foreignObject')
+		var fo = cont.append('foreignObject')
     		.attr("x", 0)
     		.attr("y", 0)
     		.attr("width", canvasWidth)
@@ -440,6 +440,7 @@ function plotVector( {container, base, vectorFile, vctFormat, geomName, vctPrope
 		contx.scale(ratio*cnvRes, ratio*cnvRes)
 	}
 
+
 	const colScl = eval('d3.scale' + colorScale + '()'); // outside of data function so it can be exported
 
 	d3.json(vectorFile).then(function(vData) {
@@ -449,28 +450,39 @@ function plotVector( {container, base, vectorFile, vctFormat, geomName, vctPrope
 
 		} else if (vctFormat === 'geoJson') {
 			var topoData = vData.features;
-			topoData.forEach( function(d) {
-				//correct last point of polygones if necessary
-				if (d.geometry.coordinates[0][0] !== d.geometry.coordinates[0][d.geometry.coordinates[0].length - 1]){
-					d.geometry.coordinates[0].push(d.geometry.coordinates[0][0])
-				};
+			topoData.every( function(d) { // instead of forEach in order to break the loop
+				//correct last point of polygons if necessary
+				// polygon
+				if (d.geometry.type == 'Polygon'){
+					if (d.geometry.coordinates[0][0][0] !== d.geometry.coordinates[0][d.geometry.coordinates[0].length - 1][0]
+						&& d.geometry.coordinates[0][0][1] !== d.geometry.coordinates[0][d.geometry.coordinates[0].length - 1][1]){
+
+						d.geometry.coordinates[0].push(d.geometry.coordinates[0][0])
+					};
+				} else{
+					alert('features are not simple polygons! please provide a simplified vector file');
+					return false
+				}
 			})
 		}
 
 		//add features to DOM, keep them invisible
 		//only features rendered with geopath will have a 'd' attribute
 		var vctDataSet = new Set();
-		const dataVectors = container.selectAll('.geoPaths')
+		const dataVectors = cont.selectAll('.geoPaths')
 	  		.data(topoData)
 		  .enter().append('path')
 	  		.attr('d', path)
 	  		.each(function(d,i){
-	  			var el = d3.select(this)
-	  			//now select only the desired features (those in the path and with the included values)
-	  			if (el._groups[0][0].hasAttribute('d') && turf.intersect(d, base.graticule.outline()) && excludeValues.indexOf(d.properties[vctProperty]) === -1 && d.properties[vctProperty]){
-	  				vctDataSet.add((d.properties[vctProperty] / vctDataScale) || d.properties[vctProperty] )
-	  				el.attr('class', 'selectedFeat')//append the class to the selected features
-	  			}	
+	  			const el = d3.select(this)
+	
+	  			if (d.geometry.type == 'Polygon'){
+		  			//now select only the desired features (those in the path and with the included values)
+		  			if (el._groups[0][0].hasAttribute('d') && turf.intersect(d, base.graticule.outline()) && excludeValues.indexOf(d['properties'][vctProperty]) === -1 && d['properties'][vctProperty]){
+		  				vctDataSet.add((d['properties'][vctProperty] / vctDataScale) || d['properties'][vctProperty] )
+		  				el.attr('class', 'selectedFeat')//append the class to the selected features
+		  			}
+	  			}
 	  		})
 	  		.style('display', 'none')
 
@@ -492,7 +504,7 @@ function plotVector( {container, base, vectorFile, vctFormat, geomName, vctPrope
 				.domain(cDomain).range(colorRange)
 		}
 		else if (colorScale === 'Ordinal'){
-			colScl.domain(ptData.sort(d3.ascending)).range(colorRange)
+			colScl.domain(vctData.sort(d3.ascending)).range(colorRange)
 		};
 
 		// define clip path for canvas
@@ -510,9 +522,9 @@ function plotVector( {container, base, vectorFile, vctFormat, geomName, vctPrope
 		d3.selectAll('.selectedFeat').each(function(d, i){
 				
 			if (renderCanvas === true) {
-				fillCol = d3.rgb(colScl(d.properties[vctProperty] / vctDataScale || d.properties[vctProperty]));
+				fillCol = d3.rgb(colScl(d['properties'][vctProperty] / vctDataScale || d['properties'][vctProperty]));
 				fillCol.opacity = +fillOpac;
-				strokeCol = d3.rgb(colScl(d.properties[vctProperty] / vctDataScale || d.properties[vctProperty]));
+				strokeCol = d3.rgb(colScl(d['properties'][vctProperty] / vctDataScale || d['properties'][vctProperty]));
 				strokeCol.opacity = +strokeOpac;
 				contx.fillStyle = fillCol.toString();
 				contx.strokeStyle = strokeCol.toString();
@@ -528,13 +540,13 @@ function plotVector( {container, base, vectorFile, vctFormat, geomName, vctPrope
 			  		.style('display', null)
 			  		.attr('class', cssStyle)
 			  		.style('fill', function(d) {
-			  			if (excludeValues.indexOf(d.properties[vctProperty]) === -1) {
-			  				return colScl(d.properties[vctProperty] / vctDataScale || d.properties[vctProperty])
+			  			if (excludeValues.indexOf(d['properties'][vctProperty]) === -1) {
+			  				return colScl(d['properties'][vctProperty] / vctDataScale || d['properties'][vctProperty])
 			  			} else {return 'none'}
 			  		})
 			  		.style('stroke', function(d) {
-			  			if (excludeValues.indexOf(d.properties[vctProperty]) === -1) {
-			  				return colScl(d.properties[vctProperty] / vctDataScale || d.properties[vctProperty])
+			  			if (excludeValues.indexOf(d['properties'][vctProperty]) === -1) {
+			  				return colScl(d['properties'][vctProperty] / vctDataScale || d['properties'][vctProperty])
 			  			} else {return 'none'}
 			  		});
 			}
