@@ -360,7 +360,7 @@ function plotPoints({container, base, pointFile, pointR, colorVar, colorScale, c
 	  			//now select only the desired points (those in the path)
 	  			if (el._groups[0][0].hasAttribute('d') && inside(pointCoord, ppList)){
 	  				ptDataSet.add((d.properties[colorVar]))
-	  				el.attr('class', cssStyle)//append the class to the selected features
+	  				el.attr('class', 'selectedPoint')//append the class to the selected features
 	  			}	
 	  		})
 	  		.style('display', 'none')
@@ -388,10 +388,11 @@ function plotPoints({container, base, pointFile, pointR, colorVar, colorScale, c
 
 
 		//render points
-		d3.selectAll('.'+ cssStyle).each(function(d, i){
+		d3.selectAll('.selectedPoint').each(function(d, i){
 			d3.select(this)
 		  		.attr('clip-path', 'url(#' + clipID + ')')
 		  		.style('display', null)
+		  		.attr('class', cssStyle)
 		  		.style('fill', d=>colScl(d.properties[colorVar]))
 		  		.style('stroke', d=>colScl(d.properties[colorVar]))
 		});
