@@ -516,6 +516,7 @@ function plotVector( {container, base, vectorFile, vctFormat, geomName, vctPrope
 			contx.clip();
 			//get style
 			var fillOpac = d3.select('.'+cssStyle).style('fill-opacity')
+			var strokeWidth = d3.select('.'+cssStyle).style('stroke-width')
 			var strokeOpac = d3.select('.'+cssStyle).style('stroke-opacity')
 		};
 
@@ -528,6 +529,7 @@ function plotVector( {container, base, vectorFile, vctFormat, geomName, vctPrope
 				strokeCol = d3.rgb(colScl(d['properties'][vctProperty] / vctDataScale || d['properties'][vctProperty]));
 				strokeCol.opacity = +strokeOpac;
 				contx.fillStyle = fillCol.toString();
+				contx.lineWidth = +strokeWidth;
 				contx.strokeStyle = strokeCol.toString();
 				
 				contx.beginPath();
