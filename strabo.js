@@ -515,8 +515,9 @@ function plotVector( {container, base, vectorFile, vctFormat, geomName, vctPrope
 			path(base.graticule.outline());
 			contx.clip();
 			//get style
+			cont.append('rect').attr('class', cssStyle); //pseudo element to assign the css style 
 			var fillOpac = d3.select('.'+cssStyle).style('fill-opacity')
-			var strokeWidth = d3.select('.'+cssStyle).style('stroke-width')
+			var strokeWidth = d3.select('.'+cssStyle).style('stroke-width').split("px")[0]
 			var strokeOpac = d3.select('.'+cssStyle).style('stroke-opacity')
 		};
 
