@@ -31,12 +31,11 @@ function baseMap ( {container, extentBounds, projection, rotate, clAngle,
 	// initial bounding box of the defined extent for the defined projection
 	const clPath0 = mainPlot.append('clipPath')
 			.append('path')
-			.attr('id', 'clPath0')
 			.datum(graticule.outline)
 			.attr('d', path);
 	const initBox = clPath0.node().getBBox();
 
-	d3.select('clipPath').remove() // clear clipPath
+	d3.select('#clPath0' + container).node().parentNode.remove() // clear clipPath
 	// redefine scale and translate
 	const s = frameFill / Math.max( initBox.width / width, initBox.height / height);
 	const t = [ (width - s*(2*initBox.x + initBox.width )) / translateScaleX, (height - s*(2*initBox.y + initBox.height )) / translateScaleY];
@@ -45,7 +44,8 @@ function baseMap ( {container, extentBounds, projection, rotate, clAngle,
 	obj = {
 		'projection': proj,
 		'projectionName': projection,
-		'graticule': graticule
+		'graticule': graticule,
+		'name': 'baseMap' + container
 	};
 
 	return obj;
@@ -216,7 +216,7 @@ function plotBase( {base, topoFile, geomName,
 
 	let path = d3.geoPath().projection(base.projection);
 
-	const clipID = 'baseClip'
+	const clipID = 'baseClip' + base.name;
 
 	let clipCont = containerCoast || containerLand || containerCountries;
 
