@@ -31,6 +31,7 @@ function baseMap ( {container, extentBounds, projection, rotate, clAngle,
 	// initial bounding box of the defined extent for the defined projection
 	const clPath0 = mainPlot.append('clipPath')
 			.append('path')
+			.attr('id', 'clPath0' + container)
 			.datum(graticule.outline)
 			.attr('d', path);
 	const initBox = clPath0.node().getBBox();
