@@ -421,10 +421,6 @@ and finally in the html file
     stroke-width: 0.3;
 }
 
-.vectorFeatures{
-    fill-opacity: 0.7;
-}
-
 .graticuleLines {
     fill: none;
     stroke: lightgrey;
