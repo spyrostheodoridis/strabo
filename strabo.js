@@ -304,7 +304,8 @@ function plotImage({container, base, imageFile, imgBounds, imgCenter, sphere = f
 			.attr('xlink:href', imageFile)
 			.attr('width', projRasterWidth)
 			.attr('height', projRasterHeight)
-			.attr('clip-path', 'url(#' + clipID + ')');
+			.attr('clip-path', 'url(#' + clipID + ')')
+			.attr('preserveAspectRatio', 'none');
 	};
 }
 
