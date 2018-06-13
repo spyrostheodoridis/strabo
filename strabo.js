@@ -716,7 +716,8 @@ function plotRaster({container, base, rasterFile, dataScale, excludeValues = [],
 				.attr('xlink:href', function(d) {return d})
 				.attr('height', projRasterHeight)
 				.attr('width', projRasterWidth)
-				.attr('transform', 'translate(' + x0 + ',' + y0 +')');
+				.attr('transform', 'translate(' + x0 + ',' + y0 +')')
+				.attr('preserveAspectRatio', 'none');
 
 	});
 	colScl.type = colorScale; //add type of scale
