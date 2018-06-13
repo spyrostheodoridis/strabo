@@ -303,7 +303,7 @@ function plotImage({container, base, imageFile, imgBounds, imgCenter, sphere = f
 			.attr('y', projCenter[1] - projRasterHeight/2)
 			.attr('xlink:href', imageFile)
 			.attr('width', projRasterWidth)
-			.attr('height', projRasterHeight + 0.1) //pixel correction of, may not be necessary in all screens
+			.attr('height', projRasterHeight + 0.2) //pixel correction of, may not be necessary in all screens
 			.attr('clip-path', 'url(#' + clipID + ')')
 			.attr('preserveAspectRatio', 'none');
 	};
