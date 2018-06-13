@@ -287,7 +287,7 @@ function plotImage({container, base, imageFile, imgBounds, imgCenter, sphere = f
 			.attr('y', projCenter[1] - rasterDims[1]/2)
 			.attr('xlink:href', imageFile)
 			.attr('width', rasterDims[0])
-			.attr('height', rasterDims[1])
+			.attr('height', rasterDims[1] + 0.5) //correction of 0.5 pixel, may not be necessary in all screens
 			.attr('clip-path', 'url(#' + clipID + ')');
 
 	} else {
