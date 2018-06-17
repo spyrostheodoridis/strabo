@@ -295,15 +295,21 @@ function plotImage({container, base, imageFile, imgBounds, imgCenter, sphere = f
 		const projCenter = base.projection(imgCenter);
 
 		//imgBounds can have any number of points in it, one is enough for the calculations
-		var projRasterWidth = Math.abs(2*d3.max(imgBounds.map(d=>projCenter[0] - base.projection(d)[0])));
-		var projRasterHeight = Math.abs(2*d3.max(imgBounds.map(d=>projCenter[1] - base.projection(d)[1])));
+		var projRasterWidth = Math.abs(2*d3.min(imgBounds.map(d=>projCenter[0] - base.projection(d)[0])));
+		var projRasterHeight = Math.abs(2*d3.min(imgBounds.map(d=>projCenter[1] - base.projection(d)[1])));
+		var projRasterX = projCenter[0] - projRasterWidth/2; 
+		var projRasterY = projCenter[1] - projRasterHeight/2;
+
+		//readjust width, height
+		var dx = d3.max(imgBounds.map(d=>base.projection(d)[0] - (projRasterX + projRasterWidth)));
+		var dy = d3.max(imgBounds.map(d=>base.projection(d)[1] - (projRasterY + projRasterHeight)));
 
 		cont.append('svg:image')
-			.attr('x', projCenter[0] - projRasterWidth/2)
-			.attr('y', projCenter[1] - projRasterHeight/2)
+			.attr('x', projRasterX)
+			.attr('y', projRasterY)
 			.attr('xlink:href', imageFile)
-			.attr('width', projRasterWidth)
-			.attr('height', projRasterHeight + 0.2) //pixel correction of, may not be necessary in all screens
+			.attr('width', projRasterWidth + dx)
+			.attr('height', projRasterHeight + dy) //pixel correction, may not be necessary in all screens
 			.attr('clip-path', 'url(#' + clipID + ')')
 			.attr('preserveAspectRatio', 'none');
 	};
