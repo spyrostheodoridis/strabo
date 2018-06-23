@@ -301,15 +301,17 @@ function plotImage({container, base, imageFile, imgBounds, imgCenter, sphere = f
 		var projRasterY = projCenter[1] - projRasterHeight/2;
 
 		//readjust width, height
-		var dx = d3.max(imgBounds.map(d=>base.projection(d)[0] - (projRasterX + projRasterWidth)));
-		var dy = d3.max(imgBounds.map(d=>base.projection(d)[1] - (projRasterY + projRasterHeight)));
+		//var dx = d3.max(imgBounds.map(d=>base.projection(d)[0] - (projRasterX + projRasterWidth)));
+		//var dy = d3.max(imgBounds.map(d=>base.projection(d)[1] - (projRasterY + projRasterHeight)));
+		var dx = 0;
+		var dy = 0;
 
 		cont.append('svg:image')
 			.attr('x', projRasterX)
 			.attr('y', projRasterY)
 			.attr('xlink:href', imageFile)
 			.attr('width', projRasterWidth + dx)
-			.attr('height', projRasterHeight + dy) //pixel correction, may not be necessary in all screens
+			.attr('height', projRasterHeight + dy)
 			.attr('clip-path', 'url(#' + clipID + ')')
 			.attr('preserveAspectRatio', 'none');
 	};
@@ -623,15 +625,15 @@ function plotRaster({container, base, rasterFile, dataScale, excludeValues = [],
 			const projLrBound = base.projection(data.loRight);
 
 			//use the center and get maximum value to account for ill-defined corners
-			var projRasterWidth = 2*d3.max([projCenter[0] - projUlBound[0],
+			var projRasterWidth = Math.abs(2*d3.min([projCenter[0] - projUlBound[0],
 											projCenter[0] - projLlBound[0],
 											projLrBound[0] - projCenter[0],
-											projUrBound[0] - projCenter[0]]);
+											projUrBound[0] - projCenter[0]]));
 
-			var projRasterHeight = 2*d3.max([projCenter[1] - projUlBound[1],
+			var projRasterHeight = Math.abs(2*d3.min([projCenter[1] - projUlBound[1],
 											projCenter[1] - projLlBound[1],
 											projLrBound[1] - projCenter[1],
-											projUrBound[1] - projCenter[1]]);
+											projUrBound[1] - projCenter[1]]));
 		};
 
 		const cellWidth = projRasterWidth / rasW; // number of screen pixels each raster cell is

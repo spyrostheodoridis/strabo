@@ -448,7 +448,7 @@ and finally in the html file
 
 ```javascript
 
-/define the main container
+//define the main container
 var svg = d3.select('body').append('svg')
     .attr('width', '600')
     .attr('height', '600')
