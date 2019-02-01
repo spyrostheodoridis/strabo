@@ -61,7 +61,7 @@ function plotGraticule( {base, plotGratLines = false, containerLines = '', stepL
 
 	if (plotGratLines === true) {
 
-		let stepLINES = base.graticule.step(stepLines);
+		base.graticule.step(stepLines);
 
 		d3.select('#' + containerLines).append('path').datum(base.graticule).attr('class', cssLines).attr('d', path);
 	}
@@ -93,7 +93,7 @@ function plotGraticule( {base, plotGratLines = false, containerLines = '', stepL
 				const lineX = d.coordinates[0][0];
 				const lineY = d.coordinates[0][1];
 
-				if()
+				if(stepTxtLon)
 
 				d3.select(this)
 					.attr('x', lon === true ? base.projection([lineX, lonTxtLat])[0] : base.projection([latTxtLon, lineY])[0] + latOffset )
