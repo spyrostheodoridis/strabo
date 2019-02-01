@@ -83,7 +83,7 @@ function plotGraticule( {base, plotGratLines = false, containerLines = '', stepL
 
 	if (plotGratText === true) {
 
-		let stepTXT = base.graticule.step(stepTxt);
+		//let stepTXT = base.graticule.step(stepTxt);
 
 		d3.select('#' + containerTxt).selectAll('text')
 			.data(base.graticule.lines())
@@ -93,11 +93,11 @@ function plotGraticule( {base, plotGratLines = false, containerLines = '', stepL
 				const lineX = d.coordinates[0][0];
 				const lineY = d.coordinates[0][1];
 
-				if(stepTxtLon)
+				
 
 				d3.select(this)
-					.attr('x', lon === true ? base.projection([lineX, lonTxtLat])[0] : base.projection([latTxtLon, lineY])[0] + latOffset )
-					.attr('y', lon === true ? base.projection([lineX, lonTxtLat])[1] + lonOffset: base.projection([latTxtLon, lineY])[1] )
+					.attr('x', lon === true ? base.projection([lineX, lonTxtPos])[0] : base.projection([latTxtPos, lineY])[0] + latOffset )
+					.attr('y', lon === true ? base.projection([lineX, lonTxtPos])[1] + lonOffset: base.projection([latTxtPos, lineY])[1] )
 					.text(lon === true ? d.coordinates[0][0] : d.coordinates[0][1] )
 					.attr('class', cssTxt)
 			});
