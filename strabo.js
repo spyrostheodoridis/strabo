@@ -300,7 +300,7 @@ function plotImage({container, base, imageFile, imgBounds, imgCenter, sphere = f
 			var projRasterWidth = Math.abs(2*d3.max(imgBounds.map(d=>projCenter[0] - base.projection(d)[0])));
 		};
 		var projRasterHeight = Math.abs(2*d3.min(imgBounds.map(d=>projCenter[1] - base.projection(d)[1])));
-		if (projRasterWidth == 0){
+		if (projRasterHeight == 0){
 			var projRasterHeight = Math.abs(2*d3.max(imgBounds.map(d=>projCenter[1] - base.projection(d)[1])));
 		};
 		var projRasterX = projCenter[0] - projRasterWidth/2; 
