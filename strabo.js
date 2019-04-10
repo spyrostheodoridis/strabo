@@ -55,13 +55,13 @@ function baseMap ( {container, extentBounds, projection, rotate, clAngle,
 
 function plotGraticule( {base, plotGratLines = false, containerLines = '', stepLines = [], cssLines = '', 
 							plotOutline = false, containerOut = '', sphereR = 0, cssOut = '',
-							plotGratText = false, containerTxt = '', stepTxt = [], cssTxt = '', latTxtLon, lonTxtLat, lonOff = 0, latOff = 0 } = {}) {
+							plotGratText = false, containerTxt = '', stepTxtLon = [], stepTxtLat = [], cssTxt = '', lonTxtPos = null, latTxtPos = null,  lonOffset = 0, latOffset = 0 } = {}) {
 
 	let path = d3.geoPath().projection(base.projection);
 
 	if (plotGratLines === true) {
 
-		let stepLINES = base.graticule.step(stepLines);
+		base.graticule.step(stepLines);
 
 		d3.select('#' + containerLines).append('path').datum(base.graticule).attr('class', cssLines).attr('d', path);
 	}
@@ -83,21 +83,48 @@ function plotGraticule( {base, plotGratLines = false, containerLines = '', stepL
 
 	if (plotGratText === true) {
 
-		let stepTXT = base.graticule.step(stepTxt);
+		var gratTxt = base.graticule;
 
-		d3.select('#' + containerTxt).selectAll('text')
-			.data(base.graticule.lines())
-  		  .enter().append('text')
-			.each(function(d){
-				const lon = (d.coordinates[0][0] === d.coordinates[1][0]) ? true : false
-				const lineX = d.coordinates[0][0];
-				const lineY = d.coordinates[0][1];
-				d3.select(this)
-					.attr('x', lon === true ? base.projection([lineX, lonTxtLat])[0] : base.projection([latTxtLon, lineY])[0] + latOff )
-					.attr('y', lon === true ? base.projection([lineX, lonTxtLat])[1] + lonOff: base.projection([latTxtLon, lineY])[1] )
-					.text(lon === true ? d.coordinates[0][0] : d.coordinates[0][1] )
-					.attr('class', cssTxt)
-			});
+		if (!Array.isArray(stepTxtLon[0]) && !Array.isArray(stepTxtLat[0])) {
+
+			gratTxt.step([stepTxtLon[0], stepTxtLat[0]])
+			d3.select('#' + containerTxt).selectAll('text')
+				.data(gratTxt.lines())
+	  		  .enter().append('text')
+				.each(function(d){
+					const lon = (d.coordinates[0][0] === d.coordinates[1][0]) ? true : false
+					const lineX = d.coordinates[0][0];
+					const lineY = d.coordinates[0][1];
+					d3.select(this)
+						.attr('x', lon === true ? base.projection([lineX, lonTxtPos])[0] : base.projection([latTxtPos, lineY])[0] + latOffset )
+						.attr('y', lon === true ? base.projection([lineX, lonTxtPos])[1] + lonOffset: base.projection([latTxtPos, lineY])[1] )
+						.text(lon === true ? d.coordinates[0][0] : d.coordinates[0][1] )
+						.attr('class', cssTxt)
+				});
+
+		};
+
+		if (Array.isArray(stepTxtLon[0])) {
+			d3.select('#' + containerTxt).selectAll('.LonText')
+				.data(stepTxtLon[0])
+			.enter().append('text')
+				.attr('x', d => base.projection([d, lonTxtPos])[0] )
+				.attr('y', d => base.projection([d, lonTxtPos])[1] + lonOffset)
+				.text(d => d)
+				.attr('class', cssTxt)
+		};
+
+		if (Array.isArray(stepTxtLat[0])) {
+			d3.select('#' + containerTxt).selectAll('.LatText')
+				.data(stepTxtLat[0])
+			.enter().append('text')
+				.attr('x', d => base.projection([latTxtPos, d])[0] + latOffset)
+				.attr('y', d => base.projection([latTxtPos, d])[1] )
+				.text(d => d)
+				.attr('class', cssTxt)
+		};
+
+		
 	};
 }
 
