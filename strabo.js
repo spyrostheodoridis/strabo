@@ -475,161 +475,165 @@ function plotPoints( {container, base, pointFile, pointR, colorVar, colorScale, 
 
 function plotVector( {container, base, vectorFile, vctFormat, geomName, vctProperty, excludeValues = [],
 					vctDataScale = 1, colorScale, colorDomain = [], colorRange, colorInterpolate = 'Hsl',
-					cssStyle, renderCanvas = false, canvasWidth, canvasHeight, cnvRes} ){
+					cssStyle, renderCanvas = false, canvasWidth, canvasHeight, cnvRes} ) {
 
-	const clipID = container + 'Clip'
+	return new Promise((resolve, reject) => {
 
-	var cont = d3.select('#' + container);
+		const clipID = container + 'Clip'
 
-	var path = d3.geoPath().projection(base.projection);
+		var cont = d3.select('#' + container);
 
-	// make new clip path from graticule.outline 
-	const clPath = cont.append('clipPath')
-		.attr('id', clipID)
-		.append('path')
-		.attr('id', clipID + 'Path')
-		.datum(base.graticule.outline)
-		.attr('d', path);
+		var path = d3.geoPath().projection(base.projection);
 
-	if (renderCanvas === true){
+		// make new clip path from graticule.outline 
+		const clPath = cont.append('clipPath')
+			.attr('id', clipID)
+			.append('path')
+			.attr('id', clipID + 'Path')
+			.datum(base.graticule.outline)
+			.attr('d', path);
 
-		var ratio = window.devicePixelRatio || 1;
+		if (renderCanvas === true){
 
-		var fo = cont.append('foreignObject')
-    		.attr("x", 0)
-    		.attr("y", 0)
-    		.attr("width", canvasWidth)
-    		.attr("height", canvasWidth)
+			var ratio = window.devicePixelRatio || 1;
 
-		 contx = fo.append('xhtml:canvas')
-			.attr('width', ratio*canvasWidth*cnvRes)
-			.attr('height', ratio*canvasHeight*cnvRes)
-			.style('width', canvasWidth + 'px')
-			.style('height', canvasHeight + 'px')
-			.attr('id', 'vCanvas').node().getContext('2d');
+			var fo = cont.append('foreignObject')
+	    		.attr("x", 0)
+	    		.attr("y", 0)
+	    		.attr("width", canvasWidth)
+	    		.attr("height", canvasWidth)
 
-		contx.scale(ratio*cnvRes, ratio*cnvRes)
-	}
+			 contx = fo.append('xhtml:canvas')
+				.attr('width', ratio*canvasWidth*cnvRes)
+				.attr('height', ratio*canvasHeight*cnvRes)
+				.style('width', canvasWidth + 'px')
+				.style('height', canvasHeight + 'px')
+				.attr('id', 'vCanvas').node().getContext('2d');
 
-
-	const colScl = eval('d3.scale' + colorScale + '()');
-
-	d3.json(vectorFile).then(function(vData) {
-
-		if (vctFormat === 'topoJson') {
-			var topoData = topojson.feature(vData, vData.objects[geomName]).features;
-
-		} else if (vctFormat === 'geoJson') {
-			var topoData = vData.features;
-			topoData.every( function(d) { // instead of forEach in order to break the loop
-				//correct last point of polygons if necessary
-				// polygon
-				if (d.geometry.type == 'Polygon'){
-					if (d.geometry.coordinates[0][0][0] !== d.geometry.coordinates[0][d.geometry.coordinates[0].length - 1][0]
-						&& d.geometry.coordinates[0][0][1] !== d.geometry.coordinates[0][d.geometry.coordinates[0].length - 1][1]){
-
-						d.geometry.coordinates[0].push(d.geometry.coordinates[0][0])
-					};
-				} else{
-					alert('features are not simple polygons! please provide a simplified vector file');
-					return false
-				}
-			})
+			contx.scale(ratio*cnvRes, ratio*cnvRes)
 		}
 
-		//add features to DOM, keep them invisible
-		//only features rendered with geopath will have a 'd' attribute
-		var vctDataSet = new Set();
-		const dataVectors = cont.selectAll('.geoPaths')
-	  		.data(topoData)
-		  .enter().append('path')
-	  		.attr('d', path)
-	  		.each(function(d,i){
-	  			const el = d3.select(this)
-	
-	  			if (d.geometry.type == 'Polygon'){
-		  			//now select only the desired features (those in the path and with the included values)
-		  			if (el._groups[0][0].hasAttribute('d') && turf.intersect(d, base.graticule.outline()) && excludeValues.indexOf(d['properties'][vctProperty]) === -1 && d['properties'][vctProperty]){
-		  				vctDataSet.add((d['properties'][vctProperty] / vctDataScale) || d['properties'][vctProperty] )
-		  				el.attr('class', 'selectedFeat')//append the class to the selected features
-		  			}
-	  			}
-	  		})
-	  		.style('display', 'none')
 
-		// set to array
-		const vctData = [];
-		vctDataSet.forEach(v => vctData.push(v));
-		vctDataSet = null;
+		const colScl = eval('d3.scale' + colorScale + '()');
 
-		//define color scale
-		if (colorScale === 'Linear'){
-			if (colorDomain.length != 0){
-				var cDomain = colorDomain;
-				cDomain.unshift(d3.extent(vctData)[0]);
-				cDomain.push(d3.extent(vctData)[1]);
-			}else{
-				var cDomain =  d3.extent(vctData);
-			};
-			colScl.interpolate(eval('d3.interpolate' + colorInterpolate))
-				.domain(cDomain).range(colorRange)
-		}
-		else if (colorScale === 'Ordinal'){
-			colScl.domain(vctData.sort(d3.ascending)).range(colorRange)
-		};
+		d3.json(vectorFile).then(function(vData) {
 
-		// define clip path for canvas
-		if (renderCanvas === true) {
-			path.context(contx);
-			contx.beginPath();
-			path(base.graticule.outline());
-			contx.clip();
-			//get style
-			cont.append('rect').attr('class', cssStyle); //pseudo element to assign the css style 
-			var fillOpac = d3.select('.'+cssStyle).style('fill-opacity')
-			var strokeWidth = d3.select('.'+cssStyle).style('stroke-width').split("px")[0]
-			var strokeOpac = d3.select('.'+cssStyle).style('stroke-opacity')
-		};
+			if (vctFormat === 'topoJson') {
+				var topoData = topojson.feature(vData, vData.objects[geomName]).features;
 
-		// render features
-		d3.selectAll('.selectedFeat').each(function(d, i){
-				
-			if (renderCanvas === true) {
-				fillCol = d3.rgb(colScl(d['properties'][vctProperty] / vctDataScale || d['properties'][vctProperty]));
-				fillCol.opacity = +fillOpac;
-				strokeCol = d3.rgb(colScl(d['properties'][vctProperty] / vctDataScale || d['properties'][vctProperty]));
-				strokeCol.opacity = +strokeOpac;
-				contx.fillStyle = fillCol.toString();
-				contx.lineWidth = +strokeWidth;
-				contx.strokeStyle = strokeCol.toString();
-				
-				contx.beginPath();
-				path(d);
-    			contx.fill();
-    			contx.stroke();
+			} else if (vctFormat === 'geoJson') {
+				var topoData = vData.features;
+				topoData.every( function(d) { // instead of forEach in order to break the loop
+					//correct last point of polygons if necessary
+					// polygon
+					if (d.geometry.type == 'Polygon'){
+						if (d.geometry.coordinates[0][0][0] !== d.geometry.coordinates[0][d.geometry.coordinates[0].length - 1][0]
+							&& d.geometry.coordinates[0][0][1] !== d.geometry.coordinates[0][d.geometry.coordinates[0].length - 1][1]){
 
-			}else {
-				d3.select(this)
-			  		.attr('clip-path', 'url(#' + clipID + ')')
-			  		.style('display', null)
-			  		.attr('class', cssStyle)
-			  		.style('fill', function(d) {
-			  			if (excludeValues.indexOf(d['properties'][vctProperty]) === -1) {
-			  				return colScl(d['properties'][vctProperty] / vctDataScale || d['properties'][vctProperty])
-			  			} else {return 'none'}
-			  		})
-			  		.style('stroke', function(d) {
-			  			if (excludeValues.indexOf(d['properties'][vctProperty]) === -1) {
-			  				return colScl(d['properties'][vctProperty] / vctDataScale || d['properties'][vctProperty])
-			  			} else {return 'none'}
-			  		});
+							d.geometry.coordinates[0].push(d.geometry.coordinates[0][0])
+						};
+					} else{
+						alert('features are not simple polygons! please provide a simplified vector file');
+						return false
+					}
+				})
 			}
-	  	});
 
+			//add features to DOM, keep them invisible
+			//only features rendered with geopath will have a 'd' attribute
+			var vctDataSet = new Set();
+			const dataVectors = cont.selectAll('.geoPaths')
+		  		.data(topoData)
+			  .enter().append('path')
+		  		.attr('d', path)
+		  		.each(function(d,i){
+		  			const el = d3.select(this)
+		
+		  			if (d.geometry.type == 'Polygon'){
+			  			//now select only the desired features (those in the path and with the included values)
+			  			if (el._groups[0][0].hasAttribute('d') && turf.intersect(d, base.graticule.outline()) && excludeValues.indexOf(d['properties'][vctProperty]) === -1 && d['properties'][vctProperty]){
+			  				vctDataSet.add((d['properties'][vctProperty] / vctDataScale) || d['properties'][vctProperty] )
+			  				el.attr('class', 'selectedFeat')//append the class to the selected features
+			  			}
+		  			}
+		  		})
+		  		.style('display', 'none')
+
+			// set to array
+			const vctData = [];
+			vctDataSet.forEach(v => vctData.push(v));
+			vctDataSet = null;
+
+			//define color scale
+			if (colorScale === 'Linear'){
+				if (colorDomain.length != 0){
+					var cDomain = colorDomain;
+					cDomain.unshift(d3.extent(vctData)[0]);
+					cDomain.push(d3.extent(vctData)[1]);
+				}else{
+					var cDomain =  d3.extent(vctData);
+				};
+				colScl.interpolate(eval('d3.interpolate' + colorInterpolate))
+					.domain(cDomain).range(colorRange)
+			}
+			else if (colorScale === 'Ordinal'){
+				colScl.domain(vctData.sort(d3.ascending)).range(colorRange)
+			};
+
+			// define clip path for canvas
+			if (renderCanvas === true) {
+				path.context(contx);
+				contx.beginPath();
+				path(base.graticule.outline());
+				contx.clip();
+				//get style
+				cont.append('rect').attr('class', cssStyle); //pseudo element to assign the css style 
+				var fillOpac = d3.select('.'+cssStyle).style('fill-opacity')
+				var strokeWidth = d3.select('.'+cssStyle).style('stroke-width').split("px")[0]
+				var strokeOpac = d3.select('.'+cssStyle).style('stroke-opacity')
+			};
+
+			// render features
+			d3.selectAll('.selectedFeat').each(function(d, i){
+					
+				if (renderCanvas === true) {
+					fillCol = d3.rgb(colScl(d['properties'][vctProperty] / vctDataScale || d['properties'][vctProperty]));
+					fillCol.opacity = +fillOpac;
+					strokeCol = d3.rgb(colScl(d['properties'][vctProperty] / vctDataScale || d['properties'][vctProperty]));
+					strokeCol.opacity = +strokeOpac;
+					contx.fillStyle = fillCol.toString();
+					contx.lineWidth = +strokeWidth;
+					contx.strokeStyle = strokeCol.toString();
+					
+					contx.beginPath();
+					path(d);
+	    			contx.fill();
+	    			contx.stroke();
+
+				}else {
+					d3.select(this)
+				  		.attr('clip-path', 'url(#' + clipID + ')')
+				  		.style('display', null)
+				  		.attr('class', cssStyle)
+				  		.style('fill', function(d) {
+				  			if (excludeValues.indexOf(d['properties'][vctProperty]) === -1) {
+				  				return colScl(d['properties'][vctProperty] / vctDataScale || d['properties'][vctProperty])
+				  			} else {return 'none'}
+				  		})
+				  		.style('stroke', function(d) {
+				  			if (excludeValues.indexOf(d['properties'][vctProperty]) === -1) {
+				  				return colScl(d['properties'][vctProperty] / vctDataScale || d['properties'][vctProperty])
+				  			} else {return 'none'}
+				  		});
+				}
+		  	});
+
+		  	colScl.type = colorScale; //add type of scale
+
+			resolve(colScl);
+
+		});
 	})
-
-	colScl.type = colorScale; //add type of scale
-	return colScl;
 }
 
 

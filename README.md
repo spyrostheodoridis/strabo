@@ -351,14 +351,14 @@ plotBase({base: baseProj, topoFile: 'world_10m.topojson', geomName: 'world_10m',
 
 plotImage({container: 'img',
           base: baseProj,
-          imageFile: 'inputFiles/world.png',
+          imageFile: 'world.png',
           imgBounds: [],
           imgCenter: [],
           sphere: true
         });
 
 plotPoints({container : 'points',
-             base: baseProj, pointFile: 'inputFiles/samples.csv',
+             base: baseProj, pointFile: 'samples.csv',
              pointR: 5, 
              colorVar: 'Altitude',
              colorScale: 'Linear',
@@ -379,7 +379,6 @@ plotPoints({container : 'points',
 ```
 
 ![alt text](examples/exampl4.png?raw=true)
-
 
 
 
@@ -439,11 +438,11 @@ var svg = d3.select('body').append('svg')
 
 //define the order of layers
 svg.append('g').attr('id', 'grat');
-svg.append('g').attr('id', 'gratTxt');
 svg.append('g').attr('id', 'vector');
 svg.append('g').attr('id', 'coast');
 svg.append('g').attr('id', 'scale');
 svg.append('g').attr('id', 'colBar');
+svg.append('g').attr('id', 'gratTxt');
 
 var baseProj = baseMap( {container: 'main',
                            extentBounds: [[0, 50], [40, 70]],
@@ -453,7 +452,7 @@ var baseProj = baseMap( {container: 'main',
 
 plotGraticule( {base: baseProj, plotGratLines: true, containerLines: 'grat', stepLines: [5, 5], cssLines: 'graticuleLines',
                     plotOutline: true, containerOut: 'grat', cssOut: 'graticuleLines',
-                    plotGratText: true, containerTxt: 'gratTxt', stepTxt: [5,5], cssTxt: 'lonLatLabels', latTxtLon: 0, lonTxtLat: 50, lonOff: 10, latOff: -10
+                    plotGratText: true, containerTxt: 'gratTxt', stepTxtLon: [5], stepTxtLat: [5], cssTxt: 'lonLatLabels', latTxtPos: 0, lonTxtPos: 50, lonOffset: 10, latOffset: -15
                     });
 
 plotScale( {container:'scale', base: baseProj, x0: 14, y0: 52, dx: 500, unit: 'km', increment: 0.0001,
@@ -464,23 +463,29 @@ plotBase( {base: baseProj, topoFile: 'world_10m.topojson', geomName: 'world_10m'
           plotCoast: true, containerCoast: 'coast', cssCoast: 'coast'
         });
 
-const colSclVector = plotVector( {container: 'vector', base: baseProj, vectorFile: 'lakes_50m.json', vctFormat: 'geoJson',
-            vctProperty: 'scalerank', colorScale: 'Linear', colorRange: ['#37FDFC', '#0276FD']} );
+plotVector( {container: 'vector',
+            base: baseProj,
+            vectorFile: 'lakes_50m.json',
+            vctFormat: 'geoJson',
+            vctProperty: 'scalerank',
+            colorScale: 'Ordinal',
+            colorRange: ['#C6E2FF', '#7EB6FF', '#3579DC', '#0147FA', '#283A90', '#000033']
+        }).then(function(scl){
 
-
-setTimeout(function() { plotColBar({ container: 'colBar',
-                                       x: 350, y: 470,
-                                       width: 130, height: 20, 
-                                       colScale: colSclVector, 
-                                       nOfSections: 100, 
-                                       text: true, 
-                                       barTextDigits: 0, 
-                                       barTitle: 'Rank', 
-                                       horizontal: true,
-                                       cssTxt: 'legendTxt'}); }, 500);
+            plotColBar({ container: 'colBar',
+                       x: 350, y: 470,
+                       width: 130, height: 20, 
+                       colScale: scl, 
+                       nOfSections: 100, 
+                       text: true, 
+                       barTextDigits: 0, 
+                       barTitle: 'Rank', 
+                       horizontal: true,
+                       cssTxt: 'legendTxt'})
+        });
 ```
 
-![alt text](examples/exampl3.png?raw=true)
+![alt text](examples/exampl5.png?raw=true)
 
 
 
