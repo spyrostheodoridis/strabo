@@ -89,7 +89,7 @@ plotBase({base: baseProj, topoFile: 'world_10m.topojson', geomName: 'world_10m',
 
 plotImage({container: 'img',
           base: baseProj,
-          imageFile: 'world.png',
+          imageFile: 'worldOrtho.png',
           imgBounds: [[0.893981647301399, 7.176719648101456], [153.31851899031952, 33.24681014801683]],
           imgCenter: [53.28405275947736, 56.18783605229462],
           sphere: false
@@ -116,28 +116,111 @@ and the css rules
 
 
 
-The same can be done in an equal area projection. In the following example we use the Behrmann cylindrical equal area projection
-(standard parallels: 30°N, 30°S). The specific projection is defined using the 'parallel' attribute.
+
+
+The same can be done in a different projection. In the following example we use the Mollweide projection, an equal-area pseudocylindrical map projection.
+
+
+```bash
+#reproject the world land file
+gdalwarp  -wo SOURCE_EXTRA=200 -wo SAMPLE_GRID=YES -t_srs '+proj=cea +lon_0=0 +lat_ts=30 +x_0=0 +y_0=0 +units=m +no_defs ' worldClip.tif worldMollweide.tif -overwrite
+#tiff to png
+gdal_translate worldMollweide.tif worldMollweide.png -of PNG -outsize 20% 20%
+```
+Compared to the previous map, there are some changes here. First the definition of projection. Then, you can see that the image we are using has a global extent.
+Because in this projection neither of the upper or lower corners of the raster can be defined in lon lat coordinates, we use two different reference points (imgBounds).
+The first corresponds to the left extreme of the map, and the second to the upper extreme. We also add some text to define our graticule lines. Note that for longitude
+we use a fixed interval of 40 degrees, while for the latitude we define custom text. Instead of land or coast, we now plot country boarders. 
+
+```javascript
+//define the main container
+var svg = d3.select('body').append('svg')
+    .attr('width', '600')
+    .attr('height', '600')
+    .attr('id', 'main');
+
+//define the order of layers
+svg.append('g').attr('id', 'grat')
+svg.append('g').attr('id', 'land')
+svg.append('g').attr('id', 'img')
+svg.append('g').attr('id', 'coast')
+
+var baseProj = baseMap( {container: 'main',
+                       extentBounds: [[-180, -90], [179.9999, 90]],
+                       projection: 'Mollweide',
+                       rotate: [0, 0, 0],
+                       clAngle: 0
+                    });
+
+plotGraticule({base: baseProj, plotGratLines: true, containerLines: 'grat', stepLines: [20, 20], cssLines : 'graticuleLines',
+                    plotOutline: true, containerOut: 'grat', cssOut: 'graticuleLines',
+                    plotGratText: true, containerTxt: 'gratTxt', stepTxtLon: [40], stepTxtLat: [[-40, 0, 40]], cssTxt: 'lonLatLabels', latTxtPos: -180, lonTxtPos: -60, lonOffset: 0, latOffset: -15
+                    });
+
+plotBase({base: baseProj, topoFile: 'world_10m.topojson', geomName: 'world_10m',
+          plotCountries: true, containerCountries: 'coast', cssCountries: 'coast'
+        });
+
+plotImage({container: 'img',
+          base: baseProj,
+          imageFile: 'worldMollweide.png',
+          imgBounds: [[-179.998580, -1.08], [-0.01, 83.6341]],
+          imgCenter: [-0.01, -1.08],
+          sphere: false
+        });
+```
+
+and the css rules
+```html
+.coast {
+    fill: none;
+    stroke: lightgrey;
+    stroke-width: 0.3px;
+}
+
+.graticuleLines {
+    fill: none;
+    stroke: lightgrey;
+    stroke-width: 1;
+}
+
+.lonLatLabels {
+    font-size: 11px;
+    alignment-baseline: middle;
+    text-anchor: middle;
+    fill: black;
+}
+```
+
+
+![alt text](examples/exampl2.png?raw=true)
+
+
+
+
+
+... or with the Behrmann cylindrical equal area projection (standard parallels: 30°N, 30°S). The specific projection is defined using the 'parallel' attribute.
+Here, we also remove the frame around the map.
 
 ```bash
 # again first clip the raster (it's in wgs84) to the desired extent
 #clip
 gdalwarp -te -180 -20 180 20 -t_srs EPSG:4326 worldNoSea.tif worldClip.tif -overwrite
 #reproject
-gdalwarp  -wo SOURCE_EXTRA=200 -wo SAMPLE_GRID=YES -t_srs '+proj=cea +lon_0=0 +lat_ts=30 +x_0=0 +y_0=0 +units=m +no_defs ' worldClip.tif worldClipReproj.tif -overwrite
+gdalwarp  -wo SOURCE_EXTRA=200 -wo SAMPLE_GRID=YES -t_srs '+proj=cea +lon_0=0 +lat_ts=30 +x_0=0 +y_0=0 +units=m +no_defs ' worldClip.tif worldMollweide.tif -overwrite
 #tiff to png
-gdal_translate worldClipReproj.tif world.png -of PNG -outsize 50% 50%
+gdal_translate worldMollweide.tif worldMollweide.png -of PNG -outsize 50% 50%
 ```
-
-The two things we change here is the definition of the projection and the image center/bounds. We also add the graticule text.
 
 ```javascript
 //define the main container
+//define the main container
 var svg = d3.select('body').append('svg')
-    .attr('width', '800')
-    .attr('height', '600')
+    .attr('width', '600')
+    .attr('height', '400')
     .attr('id', 'main');
 
+//define the order of layers
 //define the order of layers
 svg.append('g').attr('id', 'grat');
 svg.append('g').attr('id', 'gratTxt');
@@ -155,7 +238,7 @@ var baseProj = baseMap( {container: 'main',
 
 plotGraticule({base: baseProj, plotGratLines: true, containerLines: 'grat', stepLines: [20, 20], cssLines : 'graticuleLines',
                     plotOutline: true, containerOut: 'grat', cssOut: 'graticuleLines',
-                    plotGratText: true, containerTxt: 'gratTxt', stepTxt: [20,20], cssTxt: 'lonLatLabels', latTxtLon: -180, lonTxtLat: -90, lonOff: 10, latOff: -15
+                    plotGratText: true, containerTxt: 'gratTxt', stepTxtLon: [40], stepTxtLat: [40], cssTxt: 'lonLatLabels', latTxtPos: -180, lonTxtPos: -90, lonOffset: 10, latOffset: -15
                     });
 
 plotBase({base: baseProj, topoFile: 'world_10m.topojson', geomName: 'world_10m',
@@ -164,7 +247,7 @@ plotBase({base: baseProj, topoFile: 'world_10m.topojson', geomName: 'world_10m',
 
 plotImage({container: 'img',
           base: baseProj,
-          imageFile: 'world.png',
+          imageFile: 'worldBehr.png',
           imgBounds: [[-180, -20], [180, 20]],
           imgCenter: [-0.0006816584381631697, 7.409997806704224e-05],
           sphere: false
@@ -178,11 +261,13 @@ and the css rules
     fill-opacity: 0.3;
 }
 
+
 .graticuleLines {
     fill: none;
     stroke: lightgrey;
     stroke-width: 1;
 }
+
 .lonLatLabels {
     font-size: 11px;
     alignment-baseline: middle;
@@ -192,19 +277,20 @@ and the css rules
 ```
 
 
-![alt text](examples/exampl1a.png?raw=true)
-
-
+![alt text](examples/exampl3.png?raw=true)
 
 
 
 
 ### Plot points on images
 We can also plot simple points colored according to their attributes. In this example we combine the same image as above
-in polar orthographic projection (sphere = true) with points that represent plant populations. The points are colored according to
-the altitude where the populations leave. In the case of full extent orthographic projections no imgBounds are necessary (actually they are not defined!)
-We also add the coastline. Instead of plotting the outline of the graticule (which leaves the antimeridian clip line), we plot a circle
-around the image using the sphereR (radius = 90 degrees) argument.
+in polar orthographic projection with points that represent plant populations. The points are colored according to
+the altitude where the populations grow. As with the Mollweide projection, for orthographic projections at global extent the raster corners cannot be defined.
+Therefore, we can tell Strabo to consider a full extent orthographic projection for the image (sphere: true).
+Instead of plotting the outline of the graticule (which leaves the antimeridian clip line), we plot a circle
+around the image using the sphereR (sphereR: 90) argument.
+
+The color legend is added using promises, a javascript technique that ensures that the color legend will be added after all the points have been rendered. 
 
 ```bash
 gdalwarp -te -180 0 180 90 worldNoSea.tif worldClip.tif -overwrite
@@ -215,17 +301,21 @@ gdal_translate worldClipReproj.tif world.png -of PNG -outsize 20% 20%
 ```html
 .coast {
     fill: none;
-    stroke: grey;
+    stroke: black;
     stroke-width: 0.3;
+}
 
 .graticuleLines {
     fill: none;
-    stroke: grey;
+    stroke: lightgrey;
     stroke-width: 1;
 }
 
-.geoPoints {
-    fill-opacity: 1;
+.lonLatLabels {
+    font-size: 14px;
+    alignment-baseline: middle;
+    text-anchor: middle;
+    fill: grey;
 }
 ```
 
@@ -251,7 +341,8 @@ var baseProj = baseMap( {container: 'main',
                     });
 
 plotGraticule({base: baseProj, plotGratLines: true, containerLines: 'grat', stepLines: [20, 20], cssLines : 'graticuleLines',
-                    plotOutline: true, containerOut: 'grat', sphereR: 90, cssOut: 'graticuleLines'
+                    plotOutline: true, containerOut: 'grat', sphereR: 90, cssOut: 'graticuleLines',
+                    plotGratText: true, containerTxt: 'gratTxt', stepTxtLon: [[-90,0,90,180]], stepTxtLat: [], cssTxt: 'lonLatLabels', latTxtPos: -160, lonTxtPos: 0, lonOffset: 10, latOffset: -15
                     });
 
 plotBase({base: baseProj, topoFile: 'world_10m.topojson', geomName: 'world_10m',
@@ -260,30 +351,31 @@ plotBase({base: baseProj, topoFile: 'world_10m.topojson', geomName: 'world_10m',
 
 plotImage({container: 'img',
           base: baseProj,
-          imageFile: 'world.png',
+          imageFile: 'inputFiles/world.png',
           imgBounds: [],
           imgCenter: [],
           sphere: true
         });
 
-const colSclPoint = plotPoints({container : 'points',
-                             base: baseProj, pointFile: 'samples.csv',
-                             pointR: 5, 
-                             colorVar: 'Altitude',
-                             colorScale: 'Linear',
-                             colorRange: ['red', 'blue'],
-                             cssStyle: 'geoPoints'
-                         });
-
-setTimeout(function() { plotColBar({ container: 'colBar',
-                                   x: 100, y: 40,
-                                   width: 30, height: 120, 
-                                   colScale: colSclPoint, 
-                                   nOfSections: 100, 
-                                   text: true, 
-                                   barTextDigits: 0, 
-                                   barTitle: 'Altitude (m a.s.l)', 
-                                   horizontal: false }); }, 500);
+plotPoints({container : 'points',
+             base: baseProj, pointFile: 'inputFiles/samples.csv',
+             pointR: 5, 
+             colorVar: 'Altitude',
+             colorScale: 'Linear',
+             colorRange: ['red', 'blue'],
+             cssStyle: 'geoPoints'
+         }).then(function(scl){
+            
+            plotColBar({ container: 'colBar',
+                   x: 100, y: 40,
+                   width: 30, height: 120, 
+                   colScale: scl, 
+                   nOfSections: 100, 
+                   text: true, 
+                   barTextDigits: 0, 
+                   barTitle: 'Altitude (m a.s.l)', 
+                   horizontal: false });
+        });
 ```
 
 ![alt text](examples/exampl2.png?raw=true)
