@@ -378,7 +378,7 @@ plotPoints({container : 'points',
         });
 ```
 
-![alt text](examples/exampl2.png?raw=true)
+![alt text](examples/exampl4.png?raw=true)
 
 
 
