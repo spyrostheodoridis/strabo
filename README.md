@@ -199,6 +199,8 @@ and the css rules
 
 
 
+
+
 ... or with the Behrmann cylindrical equal area projection (standard parallels: 30°N, 30°S). The specific projection is defined using the 'parallel' attribute.
 Here, we also remove the frame around the map.
 
@@ -280,7 +282,7 @@ and the css rules
 ![alt text](examples/exampl3.png?raw=true)
 
 
-
+##################################################################################################################################
 
 ### Plot points on images
 We can also plot simple points colored according to their attributes. In this example we combine the same image as above
@@ -382,7 +384,7 @@ plotPoints({container : 'points',
 
 
 
-##############################################################################
+##################################################################################################################################
 
 ### Plot vectors
 In this example, we plot Lakes of northern Europe in vector format (polygon geometries) and color them according to their rank provided by Natural Earth.
@@ -489,7 +491,7 @@ plotVector( {container: 'vector',
 
 
 
-
+##################################################################################################################################
 
 ### Plot rasters
 Raster datasets can be quite heavy for visualization programs to process. strabo utilizes the canvas element to make
