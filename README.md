@@ -382,7 +382,7 @@ plotPoints({container : 'points',
 
 
 
-
+##############################################################################
 
 ### Plot vectors
 In this example, we plot Lakes of northern Europe in vector format (polygon geometries) and color them according to their rank provided by Natural Earth.
