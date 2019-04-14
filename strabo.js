@@ -638,163 +638,168 @@ function plotVector( {container, base, vectorFile, vctFormat, geomName, vctPrope
 
 
 function plotRaster({container, base, rasterFile, dataScale, excludeValues = [],
-					colorScale, colorDomain = [], colorRange, colorInterpolate = 'Hsl', rScale = 150, sphere = false} = {}){
+					colorScale, colorDomain = [], colorRange, colorInterpolate = 'Hsl', rScale = 150, sphere = false} ){
 
-	const clipID = container + 'Clip'
+	return new Promise((resolve, reject) => {
 
-	var cont = d3.select('#' + container);
+		const clipID = container + 'Clip'
 
-	const path = d3.geoPath().projection(base.projection);
+		var cont = d3.select('#' + container);
 
-	// make new clip path from graticule.outline 
-	const clPath = cont.append('clipPath')
-		.attr('id', clipID)
-		.append('path')
-		.attr('id', clipID + 'Path')
-		.datum(base.graticule.outline)
-		.attr('d', path);
+		const path = d3.geoPath().projection(base.projection);
 
-	// get vertices of clip path and use them to exclude points that fall outside of path
-	const clipP = d3.select('#' + clipID + 'Path').node().getAttribute('d')
-    const ppList = clipP.replace('M', '').replace('Z', '').split('L')
-    ppList.forEach(function(d, i){
-        ppList[i] = d.split(',').map(v=>+v)
-    });
+		// make new clip path from graticule.outline 
+		const clPath = cont.append('clipPath')
+			.attr('id', clipID)
+			.append('path')
+			.attr('id', clipID + 'Path')
+			.datum(base.graticule.outline)
+			.attr('d', path);
 
-	const colScl = eval('d3.scale' + colorScale + '()'); // outside of data function for export
+		// get vertices of clip path and use them to exclude points that fall outside of path
+		const clipP = d3.select('#' + clipID + 'Path').node().getAttribute('d')
+	    const ppList = clipP.replace('M', '').replace('Z', '').split('L')
+	    ppList.forEach(function(d, i){
+	        ppList[i] = d.split(',').map(v=>+v)
+	    });
 
-	d3.json(rasterFile).then(function(data) {
+		const colScl = eval('d3.scale' + colorScale + '()'); // outside of data function for export
 
-		const rasW = data.width; //raster resolution stored in the json file
-		const rasH = data.height; //raster resolution stored in the json file
+		d3.json(rasterFile).then(function(data) {
 
-		//get width and height of layer in projected pixels
-		if (sphere === true){
+			const rasW = data.width; //raster resolution stored in the json file
+			const rasH = data.height; //raster resolution stored in the json file
 
-			const mapCenter = base.projection.rotate().map(d=>-d);
+			//get width and height of layer in projected pixels
+			if (sphere === true){
 
-			const rasterDims = getGlobeDims(mapCenter, base);
-			var projRasterWidth = rasterDims[0];
-			var projRasterHeight = rasterDims[1];
+				const mapCenter = base.projection.rotate().map(d=>-d);
 
-			var projCenter = base.projection(mapCenter);
+				const rasterDims = getGlobeDims(mapCenter, base);
+				var projRasterWidth = rasterDims[0];
+				var projRasterHeight = rasterDims[1];
 
-		} else{
+				var projCenter = base.projection(mapCenter);
 
-			//define the attributes of the layer
-			var projCenter = base.projection(data.center);
-			const projUlBound = base.projection(data.upLeft);
-			const projUrBound = base.projection(data.upRight);
-			const projLlBound = base.projection(data.loLeft);
-			const projLrBound = base.projection(data.loRight);
+			} else{
 
-			//use the center and get maximum value to account for ill-defined corners
-			var projRasterWidth = Math.abs(2*d3.min([projCenter[0] - projUlBound[0],
-											projCenter[0] - projLlBound[0],
-											projLrBound[0] - projCenter[0],
-											projUrBound[0] - projCenter[0]]));
+				//define the attributes of the layer
+				var projCenter = base.projection(data.center);
+				const projUlBound = base.projection(data.upLeft);
+				const projUrBound = base.projection(data.upRight);
+				const projLlBound = base.projection(data.loLeft);
+				const projLrBound = base.projection(data.loRight);
 
-			var projRasterHeight = Math.abs(2*d3.min([projCenter[1] - projUlBound[1],
-											projCenter[1] - projLlBound[1],
-											projLrBound[1] - projCenter[1],
-											projUrBound[1] - projCenter[1]]));
-		};
+				//use the center and get maximum value to account for ill-defined corners
+				var projRasterWidth = Math.abs(2*d3.min([projCenter[0] - projUlBound[0],
+												projCenter[0] - projLlBound[0],
+												projLrBound[0] - projCenter[0],
+												projUrBound[0] - projCenter[0]]));
 
-		const cellWidth = projRasterWidth / rasW; // number of screen pixels each raster cell is
-		const cellHeight = projRasterHeight / rasH;
+				var projRasterHeight = Math.abs(2*d3.min([projCenter[1] - projUlBound[1],
+												projCenter[1] - projLlBound[1],
+												projLrBound[1] - projCenter[1],
+												projUrBound[1] - projCenter[1]]));
+			};
 
-		const x0 = projCenter[0] - projRasterWidth/2; //raster projected origin x
-		const y0 = projCenter[1] - projRasterHeight/2;; //raster projected origin y
+			const cellWidth = projRasterWidth / rasW; // number of screen pixels each raster cell is
+			const cellHeight = projRasterHeight / rasH;
 
-		// get only pixel values inside clip path
-		var imgDataSet = new Set();
-		data.data.forEach(function(d, i){ 
-			for (let c = 0; c < d.length; ++c) {
-				if(d[c]!==-9999 && excludeValues.indexOf(d[c]) === -1) {
-					const cellRow = i;
-					const cellCol = c;
-					const cellX = x0 + cellCol * cellWidth;
-					const cellY = y0 + cellRow * cellHeight;
-					if (inside( [cellX, cellY], ppList)) {
-						imgDataSet.add(d[c] / dataScale)
+			const x0 = projCenter[0] - projRasterWidth/2; //raster projected origin x
+			const y0 = projCenter[1] - projRasterHeight/2;; //raster projected origin y
+
+			// get only pixel values inside clip path
+			var imgDataSet = new Set();
+			data.data.forEach(function(d, i){ 
+				for (let c = 0; c < d.length; ++c) {
+					if(d[c]!==-9999 && excludeValues.indexOf(d[c]) === -1) {
+						const cellRow = i;
+						const cellCol = c;
+						const cellX = x0 + cellCol * cellWidth;
+						const cellY = y0 + cellRow * cellHeight;
+						if (inside( [cellX, cellY], ppList)) {
+							imgDataSet.add(d[c] / dataScale)
+						}
 					}
 				}
+			});
+
+			// set to array
+			var imgData = [];
+			imgDataSet.forEach(v => imgData.push(v));
+
+			//define color scale
+			if (colorScale === 'Linear'){
+				if (colorDomain.length != 0){
+					var cDomain = colorDomain;
+					cDomain.unshift(d3.extent(imgData)[0]);
+					cDomain.push(d3.extent(imgData)[1]);
+				}else{
+					var cDomain =  d3.extent(imgData);
+				};
+				colScl.interpolate(eval('d3.interpolate' + colorInterpolate))
+					.domain(cDomain).range(colorRange)
 			}
-		});
-
-		// set to array
-		var imgData = [];
-		imgDataSet.forEach(v => imgData.push(v));
-
-		//define color scale
-		if (colorScale === 'Linear'){
-			if (colorDomain.length != 0){
-				var cDomain = colorDomain;
-				cDomain.unshift(d3.extent(imgData)[0]);
-				cDomain.push(d3.extent(imgData)[1]);
-			}else{
-				var cDomain =  d3.extent(imgData);
+			else if (colorScale === 'Ordinal'){
+				colScl.domain(ptData.sort(d3.ascending)).range(colorRange)
 			};
-			colScl.interpolate(eval('d3.interpolate' + colorInterpolate))
-				.domain(cDomain).range(colorRange)
-		}
-		else if (colorScale === 'Ordinal'){
-			colScl.domain(ptData.sort(d3.ascending)).range(colorRange)
-		};
 
-		imgDataSet = null;
-		imgData = null;
+			imgDataSet = null;
+			imgData = null;
 
-		// create the invisible source canvas
-		const canvas = d3.select('body').append('canvas')
-			.attr('id', 'tmpCanvas').style('display', 'none');
-		const ctx = canvas.node().getContext('2d');
+			// create the invisible source canvas
+			const canvas = d3.select('body').append('canvas')
+				.attr('id', 'tmpCanvas').style('display', 'none');
+			const ctx = canvas.node().getContext('2d');
 
-		// the following part takes care of the blurriness in retina displays
-		const ratio = window.devicePixelRatio || 1;
-	    canvas.attr('width', rasW * ratio * rScale) // the physical pixels of the canvas / rendering pixels
-	    	.attr('height', rasH * ratio * rScale) 
-	    	.style('width', rasW * rScale + 'px') // "visible" pixels
-	    	.style('height', rasH * rScale + 'px');
+			// the following part takes care of the blurriness in retina displays
+			const ratio = window.devicePixelRatio || 1;
+		    canvas.attr('width', rasW * ratio * rScale) // the physical pixels of the canvas / rendering pixels
+		    	.attr('height', rasH * ratio * rScale) 
+		    	.style('width', rasW * rScale + 'px') // "visible" pixels
+		    	.style('height', rasH * rScale + 'px');
 
-		//define the image
-		imageData = ctx.createImageData(rasW, rasH);
-		//populate the image (pixels)
-		for (let r = 0, l = 0; r < data.data.length; r++){
-			for (let c = 0; c < data.data[r].length; c++, l += 4){
-				const pc = d3.rgb(colScl(data.data[r][c] / dataScale)); // pixel color
+			//define the image
+			imageData = ctx.createImageData(rasW, rasH);
+			//populate the image (pixels)
+			for (let r = 0, l = 0; r < data.data.length; r++){
+				for (let c = 0; c < data.data[r].length; c++, l += 4){
+					const pc = d3.rgb(colScl(data.data[r][c] / dataScale)); // pixel color
 
-				imageData.data[l + 0] = pc.r;
-				imageData.data[l + 1] = pc.g;
-				imageData.data[l + 2] = pc.b;
-				imageData.data[l + 3] = (data.data[r][c] !== -9999 && excludeValues.indexOf(data.data[r][c]) === -1) ? 255 : 0; //opacity
-			}
-		};
+					imageData.data[l + 0] = pc.r;
+					imageData.data[l + 1] = pc.g;
+					imageData.data[l + 2] = pc.b;
+					imageData.data[l + 3] = (data.data[r][c] !== -9999 && excludeValues.indexOf(data.data[r][c]) === -1) ? 255 : 0; //opacity
+				}
+			};
 
-		const offCtx = canvas.node().cloneNode().getContext('2d'); // create an off screen canvas
-		offCtx.putImageData(imageData, 0,0);
-		ctx.scale(ratio * rScale, ratio * rScale); // rescale the target context
-		ctx.mozImageSmoothingEnabled = false;
-		ctx.imageSmoothingEnabled = false;
-		ctx.drawImage(offCtx.canvas, 0,0);
+			const offCtx = canvas.node().cloneNode().getContext('2d'); // create an off screen canvas
+			offCtx.putImageData(imageData, 0,0);
+			ctx.scale(ratio * rScale, ratio * rScale); // rescale the target context
+			ctx.mozImageSmoothingEnabled = false;
+			ctx.imageSmoothingEnabled = false;
+			ctx.drawImage(offCtx.canvas, 0,0);
 
-		//export image
-		const ImageD = canvas.node().toDataURL('img/png');
-		d3.select('#tmpCanvas').remove() // remove invisible canvas
-		//load image
-		cont.attr('clip-path', 'url(#' + clipID + ')'); //clip parent g element (otherwise transformation will influence the clip path)
-		const canvIm = cont.append('svg:image')
-				.datum(ImageD)
-				.attr('xlink:href', function(d) {return d})
-				.attr('height', projRasterHeight)
-				.attr('width', projRasterWidth)
-				.attr('transform', 'translate(' + x0 + ',' + y0 +')')
-				.attr('preserveAspectRatio', 'none');
+			//export image
+			const ImageD = canvas.node().toDataURL('img/png');
+			d3.select('#tmpCanvas').remove() // remove invisible canvas
+			//load image
+			cont.attr('clip-path', 'url(#' + clipID + ')'); //clip parent g element (otherwise transformation will influence the clip path)
+			const canvIm = cont.append('svg:image')
+					.datum(ImageD)
+					.attr('xlink:href', function(d) {return d})
+					.attr('height', projRasterHeight)
+					.attr('width', projRasterWidth)
+					.attr('transform', 'translate(' + x0 + ',' + y0 +')')
+					.attr('preserveAspectRatio', 'none');
 
+		
+		colScl.type = colorScale; //add type of scale
+
+		resolve(colScl);
+
+		});
 	});
-	colScl.type = colorScale; //add type of scale
-
-	return colScl;
 }
 
 

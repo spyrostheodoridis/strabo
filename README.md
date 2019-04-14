@@ -112,11 +112,9 @@ and the css rules
 
 ![alt text](examples/exampl1.png?raw=true)
 
-
-
-
-
-
+<!--- 
+################################################################################################################
+--->
 
 The same can be done in a different projection. In the following example we use the Mollweide projection, an equal-area pseudocylindrical map projection.
 
@@ -196,9 +194,9 @@ and the css rules
 ![alt text](examples/exampl2.png?raw=true)
 
 
-
-
-
+<!--- 
+################################################################################################################
+--->
 
 
 ... or with the Behrmann cylindrical equal area projection (standard parallels: 30°N, 30°S). The specific projection is defined using the 'parallel' attribute.
@@ -553,7 +551,6 @@ and finally in the html file
 ```
 
 ```javascript
-
 //define the main container
 var svg = d3.select('body').append('svg')
     .attr('width', '600')
@@ -576,7 +573,7 @@ var baseProj = baseMap( {container: 'main',
 
 plotGraticule( {base: baseProj, plotGratLines: true, containerLines: 'grat', stepLines: [5, 5], cssLines: 'graticuleLines',
                     plotOutline: true, containerOut: 'grat', cssOut: 'graticuleLines',
-                    plotGratText: true, containerTxt: 'gratTxt', stepTxt: [5,5], cssTxt: 'lonLatLabels', latTxtLon: 19, lonTxtLat: 34, lonOff: 10, latOff: -10
+                    plotGratText: true, containerTxt: 'gratTxt', stepTxtLon: [5], stepTxtLat: [5], cssTxt: 'lonLatLabels', latTxtPos: 19, lonTxtPos: 34, lonOffset: 10, latOffset: -10
                     });
 
 plotScale( {container:'scale', base: baseProj, x0: 20, y0: 35, dx: 100, unit: 'km', increment: 0.0001,
@@ -587,24 +584,32 @@ plotBase( {base: baseProj, topoFile: 'world_10m.topojson', geomName: 'world_10m'
           plotCoast: true, containerCoast: 'coast', cssCoast: 'coast'
         });
 
-var colSclImg = plotRaster({container: 'canvas', 
-                           base: baseProj, 
-                           rasterFile: 'climD3.json', 
-                           dataScale: 10,  
-                           colorScale: 'Linear', 
-                           colorRange: ['blue', 'red'],
-                           colorInterpolate: 'HslLong',
-                           rScale: 5} );
-
-setTimeout(function() { plotColBar({ container: 'colBar',
-                                   x: 100, y: 450,
-                                   width: 100, height: 20, 
-                                   colScale: colSclImg, 
-                                   nOfSections: 100, 
-                                   barTextDigits: 0, 
-                                   barTitle: 'Annual Mean Temperature (C°)', 
-                                   horizontal: true,
-                                   cssTxt: 'legendTxt'}); }, 1000);
+plotRaster({container: 'canvas', 
+           base: baseProj, 
+           rasterFile: 'inputFiles/climD3.json', 
+           dataScale: 10,  
+           colorScale: 'Linear', 
+           colorRange: ['blue', 'red'],
+           colorInterpolate: 'HslLong',
+           rScale: 5
+        }).then(function(scl){
+            
+        plotColBar({ container: 'colBar',
+                   x: 100, y: 450,
+                   width: 100, height: 20, 
+                   colScale: scl, 
+                   nOfSections: 100, 
+                   barTextDigits: 0, 
+                   barTitle: 'Annual Mean Temperature (C°)', 
+                   horizontal: true,
+                   cssTxt: 'legendTxt'});
+        });
 ```
 
-![alt text](examples/exampl4.png?raw=true)
+![alt text](examples/exampl6.png?raw=true)
+
+<!--- 
+################################################################################################################
+################################################################################################################
+################################################################################################################
+--->
