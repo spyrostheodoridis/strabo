@@ -39,7 +39,6 @@ geo2topo world_10m.json > world_10m.topojson -q 1000000
 Notes:
 1. For topo / geojson files use the standard EPSG:4326 projection to make sure that all coordinates are in WGS84 datum. D3 will take care of the reprojection  
 2. The world topojson file can be directly downloaded from this repository  
-3. Depending on the projection, you may need to open world_10m.topojson file with a text editor, go at the end of the file, and change 'translate':[-179.999999,-90] to 'translate':[-179.999999,-89.99999]  
 
 Then prepare the image. I am using the gdal library for all transformations. 
 
@@ -73,7 +72,7 @@ svg.append('g').attr('id', 'land')
 svg.append('g').attr('id', 'img')
 
 var baseProj = baseMap( {container: 'main',
-                       extentBounds: [[-180, -90], [179.9999, 90]],
+                       extentBounds: [[-180, -90], [179.9999, 90]], //179.9999 instead of 180 to avoid zero extend
                        projection: 'Orthographic',
                        rotate: [-50, -60, 0],
                        clAngle: 90
@@ -91,8 +90,7 @@ plotImage({container: 'img',
           base: baseProj,
           imageFile: 'worldOrtho.png',
           imgBounds: [[0.893981647301399, 7.176719648101456], [153.31851899031952, 33.24681014801683]],
-          imgCenter: [53.28405275947736, 56.18783605229462],
-          sphere: false
+          imgCenter: [53.28405275947736, 56.18783605229462]
         });
 ```
 
@@ -146,8 +144,7 @@ svg.append('g').attr('id', 'coast')
 var baseProj = baseMap( {container: 'main',
                        extentBounds: [[-180, -90], [179.9999, 90]],
                        projection: 'Mollweide',
-                       rotate: [0, 0, 0],
-                       clAngle: 0
+                       rotate: [0, 0, 0]
                     });
 
 plotGraticule({base: baseProj, plotGratLines: true, containerLines: 'grat', stepLines: [20, 20], cssLines : 'graticuleLines',
@@ -163,8 +160,7 @@ plotImage({container: 'img',
           base: baseProj,
           imageFile: 'worldMollweide.png',
           imgBounds: [[-179.998580, -1.08], [-0.01, 83.6341]],
-          imgCenter: [-0.01, -1.08],
-          sphere: false
+          imgCenter: [-0.01, -1.08]
         });
 ```
 
@@ -231,7 +227,6 @@ var baseProj = baseMap( {container: 'main',
                        extentBounds: [[-180, -90], [179.9999, 90]],
                        projection: 'CylindricalEqualArea',
                        rotate: [0, 0, 0],
-                       clAngle: 0,
                        parallel: 30,
                        frame: false
                     });
@@ -249,8 +244,7 @@ plotImage({container: 'img',
           base: baseProj,
           imageFile: 'worldBehr.png',
           imgBounds: [[-180, -20], [180, 20]],
-          imgCenter: [-0.0006816584381631697, 7.409997806704224e-05],
-          sphere: false
+          imgCenter: [-0.0006816584381631697, 7.409997806704224e-05]
         });
 ```
 
@@ -290,8 +284,8 @@ We can also plot simple points colored according to their attributes. In this ex
 in polar orthographic projection with points that represent plant populations. The points are colored according to
 the altitude where the populations grow. As with the Mollweide projection, for orthographic projections at global extent the raster corners cannot be defined.
 Therefore, we can tell Strabo to consider a full extent orthographic projection for the image (sphere: true).
-Instead of plotting the outline of the graticule (which leaves the antimeridian clip line), we plot a circle
-around the image using the sphereR (sphereR: 90) argument.
+Instead of plotting the full outline of the graticule (which leaves the antimeridian clip line), we plot a circle
+around the image using the outlineType: 'globe' argument.
 
 The color legend is added using promises, a javascript technique that ensures that the color legend will be added after all the points have been rendered. 
 
@@ -340,11 +334,11 @@ var baseProj = baseMap( {container: 'main',
                        extentBounds: [[-180, 0], [179.9999, 90]],
                        projection: 'Orthographic',
                        rotate: [0, -90, 0],
-                       clAngle: 90.0001
+                       clAngle: 90.0001 //add 0.0001
                     });
 
 plotGraticule({base: baseProj, plotGratLines: true, containerLines: 'grat', stepLines: [20, 20], cssLines : 'graticuleLines',
-                    plotOutline: true, containerOut: 'grat', sphereR: 90, cssOut: 'graticuleLines',
+                    plotOutline: true, outlineType: 'globe', containerOut: 'grat', cssOut: 'graticuleLines',
                     plotGratText: true, containerTxt: 'gratTxt', stepTxtLon: [[-90,0,90,180]], stepTxtLat: [], cssTxt: 'lonLatLabels', latTxtPos: -160, lonTxtPos: 0, lonOffset: 10, latOffset: -15
                     });
 
