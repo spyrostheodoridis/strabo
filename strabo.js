@@ -1,5 +1,5 @@
 
-function baseMap ( {container, extentBounds, projection, rotate, clAngle,
+function baseMap ( {container, extentBounds, projection, rotate, clAngle = 0,
 					parallel = null, frame = true, frameFill = 0.9, translateScaleX = 2, translateScaleY = 2 } = {} ) {
 
 	const mainPlot = d3.select('#' + container);
@@ -54,7 +54,7 @@ function baseMap ( {container, extentBounds, projection, rotate, clAngle,
 
 
 function plotGraticule( {base, plotGratLines = false, containerLines = '', stepLines = [], cssLines = '', 
-							plotOutline = false, containerOut = '', sphereR = 0, cssOut = '',
+							plotOutline = false, outlineType = 'full', sphereR = 90, containerOut = '', cssOut = '',
 							plotGratText = false, containerTxt = '', stepTxtLon = [], stepTxtLat = [], cssTxt = '', lonTxtPos = null, latTxtPos = null,  lonOffset = 0, latOffset = 0 } = {}) {
 
 	let path = d3.geoPath().projection(base.projection);
@@ -66,20 +66,24 @@ function plotGraticule( {base, plotGratLines = false, containerLines = '', stepL
 		d3.select('#' + containerLines).append('path').datum(base.graticule).attr('class', cssLines).attr('d', path);
 	}
 
-	if (plotOutline === true && !sphereR) {
+	if (plotOutline === true) {
+			const outL = d3.select('#' + containerOut).append('path')
+							.attr('class', cssOut)
 
-		d3.select('#' + containerOut).append('path')
-			.datum(base.graticule.outline)
-			.attr('class', cssOut)
-			.attr('d', path);
-	};
+		if (outlineType === 'full'){
+			outL.datum(base.graticule.outline)
+				.attr('d', path);
 
-    if (plotOutline === true && sphereR){
-        const pc = [base.projection.center()[0] - base.projection.rotate()[0], base.projection.center()[1] - base.projection.rotate()[1]]
-        d3.select('#' + containerOut).append('path')
-        .attr('d', path(d3.geoCircle().center(pc).radius(sphereR).precision(0.5)()))
-            .attr('class', cssOut);
-    };
+		} else if (outlineType === 'sphere') {
+			const pc = [base.projection.center()[0] - base.projection.rotate()[0], base.projection.center()[1] - base.projection.rotate()[1]]
+	        outL.attr('d', path(d3.geoCircle().center(pc).radius(sphereR).precision(0.5)()))
+	            .attr('class', cssOut);
+
+		} else if (outlineType === 'globe') {
+			outL.datum({type:"Sphere"})
+				.attr('d', path);
+		};
+	}
 
 	if (plotGratText === true) {
 
