@@ -401,19 +401,21 @@ function plotPoints( {container, base, pointFile, pointR, colorVar, colorScale, 
 		d3.csv(pointFile).then(function (data) {
 
 			// create geojson for points to be used as path
-			geoFeat = {}
+			var geoFeat = {}
 			geoFeat.type = 'FeatureCollection'
 			geoFeat.crs = { 'type': 'name', 'properties': { 'name': 'urn:ogc:def:crs:OGC:1.3:CRS84' } }
 			geoFeat.features = []
 
 			data.forEach(function(d){
-				const colD = (isNaN(d[colorVar]) == true) ? d[colorVar] : +d[colorVar];
-				var props = {[colorVar]: +d[colorVar]};
-				includeVars.forEach(function(v){
-					props[v] = d[v];
-				});
-
-				geoFeat.features.push({ 'type': 'Feature', 'properties': props, 'geometry': { 'type': 'Point', 'coordinates': [ +d.x, +d.y ] } })
+				if ( ['NA', 'na', 'nan'].indexOf(d[colorVar]) < 0 ){ //exclude na
+					const colD = (isNaN(d[colorVar]) == true) ? d[colorVar] : +d[colorVar];
+					var props = {[colorVar]: d[colorVar]};
+					includeVars.forEach(function(v){
+						props[v] = d[v];
+					});
+					
+					geoFeat.features.push({ 'type': 'Feature', 'properties': props, 'geometry': { 'type': 'Point', 'coordinates': [ +d.x, +d.y ] } })
+				}
 			})
 
 			//add features to DOM, keep them invisible
@@ -455,7 +457,6 @@ function plotPoints( {container, base, pointFile, pointR, colorVar, colorScale, 
 			else if (colorScale === 'Ordinal'){
 				colScl.domain(ptData.sort(d3.ascending)).range(colorRange)
 			};
-
 
 			//render points
 			d3.selectAll('.selectedPoint').each(function(d, i){
