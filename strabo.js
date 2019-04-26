@@ -408,8 +408,8 @@ function plotPoints( {container, base, pointFile, pointR, colorVar, colorScale, 
 
 			data.forEach(function(d){
 				if ( ['NA', 'na', 'nan'].indexOf(d[colorVar]) < 0 ){ //exclude na
-					const colD = (isNaN(d[colorVar]) == true) ? d[colorVar] : +d[colorVar];
-					var props = {[colorVar]: d[colorVar]};
+		
+					var props = (colorScale === 'Linear') ? {[colorVar]: +d[colorVar]} : {[colorVar]: d[colorVar]};
 					includeVars.forEach(function(v){
 						props[v] = d[v];
 					});
@@ -417,26 +417,26 @@ function plotPoints( {container, base, pointFile, pointR, colorVar, colorScale, 
 					geoFeat.features.push({ 'type': 'Feature', 'properties': props, 'geometry': { 'type': 'Point', 'coordinates': [ +d.x, +d.y ] } })
 				}
 			})
-
+			
 			//add features to DOM, keep them invisible
 			//only features rendered with geopath will have a 'd' attribute
 			var ptDataSet = new Set();
 			const dataPts = cont.selectAll('.geoP')
 		  		.data(geoFeat.features)
-	          .enter().append('path')
-		  		.attr('d', path)
+		  		.enter().append('path')
 		  		.each(function(d,i){
-		  			var el = d3.select(this)
 		  			const pointCoord = base.projection(d.geometry.coordinates);
 		  			//now select only the desired points (those in the path)
-		  			if (el._groups[0][0].hasAttribute('d') && inside(pointCoord, ppList)){
+		  			if (inside(pointCoord, ppList)){
+		  				d3.select(this)
+		  					.attr('d', path)
+		  					.attr('class', 'selectedPoint')
+		  					.style('display', 'none')
+
 		  				ptDataSet.add((d.properties[colorVar]))
-		  				el.attr('class', 'selectedPoint')//append the class to the selected features
 		  			}	
 		  		})
-		  		.style('display', 'none')
-
-
+		  		
 		  	// set to array
 			const ptData = [];
 			ptDataSet.forEach(v => ptData.push(v));
@@ -457,6 +457,7 @@ function plotPoints( {container, base, pointFile, pointR, colorVar, colorScale, 
 			else if (colorScale === 'Ordinal'){
 				colScl.domain(ptData.sort(d3.ascending)).range(colorRange)
 			};
+
 
 			//render points
 			d3.selectAll('.selectedPoint').each(function(d, i){
